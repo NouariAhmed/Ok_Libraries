@@ -25,15 +25,19 @@ $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
  
 // Get the selected library type, states, provinces, and cities from the query parameters
 $selectedLibraryType = isset($_GET['libraryType']) ? $_GET['libraryType'] : 'all';
+$selectedLibraryPercentage = isset($_GET['libraryPercentage']) ? $_GET['libraryPercentage'] : 'all'; 
 $selectedStates = isset($_GET['states']) ? $_GET['states'] : 'all';
 $selectedProvinces = isset($_GET['provinces']) ? $_GET['provinces'] : 'all';
 $selectedCities = isset($_GET['cities']) ? $_GET['cities'] : 'all';
+
 
 // Construct the SQL query based on selected filters
 $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
         INNER JOIN locations AS loc ON l.location_id = loc.location_id
         LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+        LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
         WHERE 1 = 1"; // Initial SQL with a dummy condition
+
 
 $bindTypes = ''; // String to store parameter types
 $bindValues = []; // Array to store parameter values
@@ -42,6 +46,12 @@ if ($selectedLibraryType !== 'all') {
     $sql .= " AND lt.library_type = ?";
     $bindTypes .= 's'; // Assuming library_type is a string
     $bindValues[] = &$selectedLibraryType;
+}
+
+if ($selectedLibraryPercentage !== 'all') { // Add this condition
+    $sql .= " AND lp.library_percentage = ?";
+    $bindTypes .= 's'; // Assuming library_percentage is a string
+    $bindValues[] = &$selectedLibraryPercentage;
 }
 
 if ($selectedStates !== 'all') {
@@ -61,6 +71,8 @@ if ($selectedCities !== 'all') {
     $bindTypes .= 's'; // Assuming cities is a string
     $bindValues[] = &$selectedCities;
 }
+
+
 
 $countStmt = mysqli_prepare($conn, $sql);
 
@@ -87,11 +99,13 @@ $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.l
         LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
         LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
         WHERE 1 = 1";
-// Rest of the query construction and pagination logic...
-
-
+        
 if ($selectedLibraryType !== 'all') {
     $sql .= " AND lt.library_type = ?";
+}
+
+if ($selectedLibraryPercentage !== 'all') {
+    $sql .= " AND lp.library_percentage = ?";
 }
 
 if ($selectedStates !== 'all') {
@@ -105,6 +119,7 @@ if ($selectedProvinces !== 'all') {
 if ($selectedCities !== 'all') {
     $sql .= " AND loc.cities = ?";
 }
+
 
 $sql .= " ORDER BY l.id DESC";
 $sql .= " LIMIT $startIndex, $itemsPerPage";
@@ -158,22 +173,40 @@ include('header.php');
         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
             <h5 class="mb-3">فلترة</h5>
            <div class="input-group input-group-outline my-3">
-            <select class="form-control" id="libraryType" name="libraryType">
-                <option value="all" <?php echo $selectedLibraryType === 'all' ? 'selected' : ''; ?>>-- جميع أنواع المكتبات --</option>
-                <?php
-                $libraryTypesQuery = "SELECT * FROM library_types";
-                $libraryTypesResult = mysqli_query($conn, $libraryTypesQuery);
+                <select class="form-control" id="libraryType" name="libraryType">
+                    <option value="all" <?php echo $selectedLibraryType === 'all' ? 'selected' : ''; ?>>-- جميع أنواع المكتبات --</option>
+                    <?php
+                    $libraryTypesQuery = "SELECT * FROM library_types";
+                    $libraryTypesResult = mysqli_query($conn, $libraryTypesQuery);
 
-                while ($libraryTypeRow = mysqli_fetch_assoc($libraryTypesResult)) {
-                    $typeId = $libraryTypeRow['id'];
-                    $typeName = $libraryTypeRow['library_type'];
-                    $selected = $selectedLibraryType === $typeName ? 'selected' : '';
+                    while ($libraryTypeRow = mysqli_fetch_assoc($libraryTypesResult)) {
+                        $typeId = $libraryTypeRow['id'];
+                        $typeName = $libraryTypeRow['library_type'];
+                        $selected = $selectedLibraryType === $typeName ? 'selected' : '';
 
-                    echo "<option value=\"$typeName\" $selected>$typeName</option>";
-                }
-                ?>
-            </select>
-</div>
+                        echo "<option value=\"$typeName\" $selected>$typeName</option>";
+                    }
+                    ?>
+                </select>
+           </div>
+           <div class="input-group input-group-outline my-3">
+                <select class="form-control" id="libraryPercentage" name="libraryPercentage">
+                    <option value="all" <?php echo $selectedLibraryPercentage === 'all' ? 'selected' : ''; ?>>-- جميع النسب المكتبية --</option>
+                    <?php
+                    $libraryPercentagesQuery = "SELECT * FROM library_percentages";
+                    $libraryPercentagesResult = mysqli_query($conn, $libraryPercentagesQuery);
+
+                    while ($libraryPercentageRow = mysqli_fetch_assoc($libraryPercentagesResult)) {
+                        $percentageId = $libraryPercentageRow['id'];
+                        $percentageName = $libraryPercentageRow['library_percentage'];
+                        $selected = $selectedLibraryPercentage === $percentageName ? 'selected' : '';
+
+                        echo "<option value=\"$percentageName\" $selected>$percentageName</option>";
+                    }
+                    ?>
+                </select>
+         </div>
+
             <div class="input-group input-group-outline my-3">
                 <select class="form-control" id="state" name="states">
                     <option value="all" <?php echo $selectedStates === 'all' ? 'selected' : ''; ?>>-- جميع الولايات --</option>
@@ -359,6 +392,7 @@ include('header.php');
       <script>
 document.addEventListener("DOMContentLoaded", function() {
     const libraryTypeDropdown = document.getElementById("libraryType");
+    const libraryPercentageDropdown = document.getElementById("libraryPercentage");
     const stateDropdown = document.getElementById("state");
     const provinceDropdown = document.getElementById("province");
     const cityDropdown = document.getElementById("city");
@@ -410,6 +444,7 @@ document.addEventListener("DOMContentLoaded", function() {
     clearFilterButton.addEventListener("click", function() {
         // Clear selected values and disable dropdowns
         libraryTypeDropdown.value = "all";
+        libraryPercentageDropdown.value = "all";
         stateDropdown.value = "all";
         provinceDropdown.value = "all";
         cityDropdown.value = "all";
