@@ -128,6 +128,26 @@ if ($result) {
     mysqli_free_result($result);
 }
   ?>
+                        <!-- logOut Modal -->
+                        <div class="modal fade" id="logOutModal" tabindex="-1" aria-labelledby="logOutModalLabel" aria-hidden="true">
+                          <div class="modal-dialog">
+                              <div class="modal-content">
+                                  <div class="modal-header"> 
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body text-center">
+                                      <h5 class="modal-title mb-3">
+                                        <i class="fas fa-sign-out-alt fa-rotate-180 fa-lg text-warning" style="font-size: 150px;"></i>
+                                      </h5>
+                                      <p>هل أنت متأكد من تسجيل الخروج؟</p>
+                                  </div>
+                                  <div class="modal-footer d-flex justify-content-center">
+                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">غلق</button>
+                                      <a class="btn btn-warning" href="../logout.php">تسجيل الخروج</a>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
   <!--   Core JS Files   -->
   <script src="../assets/js/core/popper.min.js"></script>
   <script src="../assets/js/core/bootstrap.min.js"></script>

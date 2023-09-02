@@ -62,9 +62,9 @@
         <li class="nav-item">
           <a class="nav-link" href="display_library_percentages.php?page=1">
             <div class="text-white text-center ms-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons-round opacity-10">percent</i>
+              <i class="material-icons-round opacity-10">subject</i>
             </div>
-            <span class="nav-link-text me-1">النسب</span>
+            <span class="nav-link-text me-1">أنواع العملاء</span>
           </a>
         </li>
         <?php
@@ -103,7 +103,7 @@ function updateDateTime() {
   // Update the date and time every second
   setInterval(updateDateTime, 1000);
 </script>
-        <a class="btn bg-gradient-primary mt-4 w-100" href="../logout.php" type="button" onclick="return confirm('هل أنت متأكد من تسجيل الخروج؟');">تسجيل الخروج</a>
+           <button type="button" class="btn bg-gradient-primary mt-4 w-100" data-bs-toggle="modal" data-bs-target="#logOutModal">تسجيل الخروج</button>
       </div>
      </div>
         
@@ -121,14 +121,14 @@ function updateDateTime() {
               <label class="form-label">بحث ...</label>
               <input type="text" name="search_query" class="form-control" required>
             </div>
-            <button type="submit" class="btn bg-gradient-primary" style="margin-right: 15px; margin-top:8px;"> بحث </button>
+            <button type="submit" class="btn bg-gradient-primary mt-3 me-3"> بحث </button>
             </div>
             </form>
         
             </div>
           <ul class="navbar-nav me-auto ms-0 justify-content-end">
             <li class="nav-item d-flex align-items-center">
-              <a href="../logout.php" class="nav-link text-body font-weight-bold px-0" onclick="return confirm('هل أنت متأكد من تسجيل الخروج؟');">
+              <a href="../logout.php" class="nav-link text-body font-weight-bold px-0" data-bs-toggle="modal" data-bs-target="#logOutModal">
                 <i class="fa fa-user me-sm-1"></i>
                 <span class="d-sm-inline d-none">تسجيل الخروج</span>
               </a>

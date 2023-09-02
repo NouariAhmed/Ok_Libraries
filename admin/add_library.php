@@ -1,7 +1,7 @@
 <?php
 include('../connect.php');
 // Initialize variables
-$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $email = $fbLink = $instaLink = $mapAddress = $tiktokLink = $notes = $state = $province = $city = "";
+$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
 $library_name_err = $address_err = $phone_err = $second_phone_err = $email_err = $state_err = $province_err = $city_err = $file_err = $register_err = "";
 
 
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $fbLink = trim($_POST["fbLink"]);
   $instaLink = trim($_POST["instaLink"]);
   $mapAddress = trim($_POST["mapAddress"]);
-  $tiktokLink = trim($_POST["tiktokLink"]);
+  $websiteLink = trim($_POST["websiteLink"]);
 
   $state = $_POST["state"];
   $province = $_POST["province"];
@@ -164,9 +164,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         move_uploaded_file($_FILES['uploadedFile']['tmp_name'], $uploadedFile);
         }
         // Insert the library data into the database
-        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, tiktokLink, created_at, notes,  userfile, filetype, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
-        mysqli_stmt_bind_param($stmt, "sssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $tiktokLink, $notes, $uploadedFile, $fileType, $location_id, $user_id, $library_type_id, $library_percentage_id);
+        mysqli_stmt_bind_param($stmt, "sssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $location_id, $user_id, $library_type_id, $library_percentage_id);
         
         mysqli_stmt_execute($stmt);
 
@@ -264,7 +264,7 @@ include('header.php');
 
                     <div class="input-group input-group-outline my-3">
                         <select class="form-control" id="library_percentage" name="library_percentage" required>
-                            <option value="" disabled selected>-- اختر نسبة المكتبة --</option>
+                            <option value="" disabled selected>-- اختر نوع العميل --</option>
                             <?php
                             // Fetch library percentages from the database
                             $sql_fetch_library_percentages = "SELECT * FROM library_percentages";
@@ -352,20 +352,8 @@ include('header.php');
                         <?php } ?>
                     </select>
                 </div>
+
                 <div class="input-group input-group-outline my-3">
-                    <select class="form-control" id="province" name="province" required>
-                        <option value="" disabled selected>-- الدائرة --</option>
-                        <?php if (isset($result_provinces)) { ?>
-                            <?php while ($row = mysqli_fetch_assoc($result_provinces)) { ?>
-                                <option value="<?php echo $row['provinces']; ?>" data-state="<?php echo $row['states']; ?>"><?php echo $row['provinces']; ?></option>
-                            <?php } ?>
-                        <?php } ?>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex">
-               <div class="col-md-6 ps-3">
-                  <div class="input-group input-group-outline m-3">
                       <select class="form-control" id="city" name="city" required>
                           <option value="">-- البلدية --</option>
                           <?php if (isset($result_cities)) { ?>
@@ -375,6 +363,20 @@ include('header.php');
                           <?php } ?>
                       </select>
                    </div>
+
+            </div>
+            <div class="d-flex">
+               <div class="col-md-6 ps-3">
+                    <div class="input-group input-group-outline m-3">
+                        <select class="form-control" id="province" name="province" required>
+                            <option value="" disabled selected>-- الدائرة --</option>
+                            <?php if (isset($result_provinces)) { ?>
+                                <?php while ($row = mysqli_fetch_assoc($result_provinces)) { ?>
+                                    <option value="<?php echo $row['provinces']; ?>" data-state="<?php echo $row['states']; ?>"><?php echo $row['provinces']; ?></option>
+                                <?php } ?>
+                            <?php } ?>
+                        </select>
+                    </div>
                  </div>
               </div>
            </div>
@@ -408,11 +410,11 @@ include('header.php');
                     <?php if (!empty($mapAddress)) echo 'placeholder="رابط الموقع على خرائط قوقل"'; ?> />
                     </div>
                     <div class="input-group input-group-outline my-3">
-                    <?php if (empty($tiktokLink)): ?>
-                    <label for="tiktokLink" class="form-label">رابط التيكتوك</label>
+                    <?php if (empty($websiteLink)): ?>
+                    <label for="websiteLink" class="form-label">رابط موقع الويب</label>
                   <?php endif; ?>
-                  <input type="text" class="form-control" id="tiktokLink" name="tiktokLink" value="<?php echo $tiktokLink; ?>"
-                    <?php if (!empty($tiktokLink)) echo 'placeholder="رابط التيكتوك"'; ?> />
+                  <input type="text" class="form-control" id="websiteLink" name="websiteLink" value="<?php echo $websiteLink; ?>"
+                    <?php if (!empty($websiteLink)) echo 'placeholder="رابط موقع الويب"'; ?> />
                     </div>
                     </div> 
 

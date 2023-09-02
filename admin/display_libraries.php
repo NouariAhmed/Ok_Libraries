@@ -191,7 +191,7 @@ include('header.php');
            </div>
            <div class="input-group input-group-outline my-3">
                 <select class="form-control" id="libraryPercentage" name="libraryPercentage">
-                    <option value="all" <?php echo $selectedLibraryPercentage === 'all' ? 'selected' : ''; ?>>-- جميع النسب المكتبية --</option>
+                    <option value="all" <?php echo $selectedLibraryPercentage === 'all' ? 'selected' : ''; ?>>-- جميع أنواع العملاء --</option>
                     <?php
                     $libraryPercentagesQuery = "SELECT * FROM library_percentages";
                     $libraryPercentagesResult = mysqli_query($conn, $libraryPercentagesQuery);
@@ -250,7 +250,7 @@ include('header.php');
                   <thead>
                     <tr>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 ">المكتبة</th>
-                      <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">النوع والنسبة</th>
+                      <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">النوع</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">الهاتف</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">الموقع</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">العنوان</th>
@@ -318,9 +318,9 @@ include('header.php');
                               <i class="fas fa-map-marker-alt"></i>
                             </a>
                           <?php } ?>
-                          <?php if (!empty($item["tiktokLink"])) { ?>
-                            <a href="<?php echo htmlspecialchars($item["tiktokLink"]); ?>" target="_blank">
-                              <i class="fab fa-tiktok"></i>
+                          <?php if (!empty($item["websiteLink"])) { ?>
+                            <a href="<?php echo htmlspecialchars($item["websiteLink"]); ?>" target="_blank">
+                              <i class="fas fa-globe"></i>
                             </a>
                           <?php } ?>
                         </div>

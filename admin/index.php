@@ -104,10 +104,10 @@ mysqli_close($conn);
           <div class="card">
             <div class="card-header p-3 pt-2">
               <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
-                <i class="material-icons opacity-10">percent</i>
+                <i class="material-icons opacity-10">subject</i>
               </div>
               <div class="text-start pt-1">
-                <p class="text-sm mb-0 text-capitalize">النسب</p>
+                <p class="text-sm mb-0 text-capitalize">العملاء</p>
                 <h4 class="mb-0">
                   <span class="text-danger text-sm font-weight-bolder ms-1"></span>
                   <?php echo $libraryPercentageCount; ?>
@@ -188,7 +188,7 @@ mysqli_close($conn);
               </div>
             </div>
             <div class="card-body">
-            <h6 class="mb-0 ">عدد المكتبات حسب النسب</h6>
+            <h6 class="mb-0 ">عدد المكتبات حسب نوع العميل</h6>
               <p class="text-sm ">آخر الإحصائيات</p>
               <hr class="info horizontal">
               <div class="d-flex ">

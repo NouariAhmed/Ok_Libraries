@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate user input
         $library_percentage = htmlspecialchars($_POST['library_percentage']);
         if (empty($library_percentage)) {
-            echo "<div class='alert alert-danger text-right text-white'>نوع النسبة مطلوب</div>";
+            echo "<div class='alert alert-danger text-right text-white'>نوع العميل مطلوب</div>";
         } else {
             // Prepare and execute SQL query
             $stmt = mysqli_prepare($conn, "INSERT INTO library_percentages (library_percentage) VALUES (?)");
@@ -76,9 +76,9 @@ include('header.php');
         }
         ?>
         <form role="form" action="" method="post">
-        <h4 class="mb-3">إضـافة نسبة </h4>
+        <h4 class="mb-3">إضـافة نوع عميل </h4>
           <div class="input-group input-group-outline my-3">
-            <label class="form-label">نوع النسبة :</label>
+            <label class="form-label">نوع العميل :</label>
               <input type="text" name="library_percentage" class="form-control" value="<?php echo htmlspecialchars(isset($item['library_percentage']) ? $item['library_percentage'] : ''); ?>" required>
               </div>
                 <button type="submit" name="submit" class="btn bg-gradient-primary" >إضـافة</button>
@@ -88,7 +88,7 @@ include('header.php');
           <div class="card my-4">
             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
               <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                <h6 class="text-white text-capitalize pe-3">جدول أنواع النسب</h6>
+                <h6 class="text-white text-capitalize pe-3">جدول أنواع العملاء</h6>
               </div>
             </div>
             <div class="card-body px-0 pb-2">
@@ -97,7 +97,7 @@ include('header.php');
                   <thead>
                     <tr>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7" >المعرف</th>
-                      <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">النسبة</th>
+                      <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">العميل</th>
                       <th class="text-center text-secondary text-lg font-weight-bolder opacity-7">الإجراءات</th>
                     
                       <th class="text-secondary opacity-7"></th>

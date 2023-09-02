@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <thead>
                             <tr>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 ">المكتبة</th>
-                                <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">النوع والنسبة</th>
+                                <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">النوع</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">الهاتف</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">الموقع</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">العنوان</th>
@@ -105,8 +105,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               <i class="fas fa-map-marker-alt"></i>
                             </a>
                           <?php } ?>
-                          <?php if (!empty($item["tiktokLink"])) { ?>
-                            <a href="<?php echo htmlspecialchars($item["tiktokLink"]); ?>" target="_blank">
+                          <?php if (!empty($item["websiteLink"])) { ?>
+                            <a href="<?php echo htmlspecialchars($item["websiteLink"]); ?>" target="_blank">
                               <i class="fab fa-tiktok"></i>
                             </a>
                           <?php } ?>

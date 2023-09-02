@@ -5,7 +5,7 @@ include('secure.php');
 include('header.php');
 include('../connect.php');
 // Initialize variables
-$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $email = $fbLink = $instaLink = $mapAddress = $tiktokLink = $notes = $state = $province = $city = "";
+$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
 $library_name_err = $library_last_name_err = $address_err = $phone_err = $second_phone_err = $email_err = $state_err = $province_err = $city_err = $register_err = $file_err= "";
 
 // Fetch library types from the database
@@ -66,7 +66,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $fbLink = htmlspecialchars($item["fbLink"]);
             $instaLink = htmlspecialchars($item["instaLink"]);
             $mapAddress = htmlspecialchars($item["mapAddress"]);
-            $tiktokLink = htmlspecialchars($item["tiktokLink"]);
+            $websiteLink = htmlspecialchars($item["websiteLink"]);
 
             $location_id =  htmlspecialchars($item["location_id"]);
            // Fetch the selected library's location details
@@ -111,7 +111,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
            $fbLink = trim($_POST["fbLink"]);
            $instaLink = trim($_POST["instaLink"]);
            $mapAddress = trim($_POST["mapAddress"]);
-           $tiktokLink = trim($_POST["tiktokLink"]);
+           $websiteLink = trim($_POST["websiteLink"]);
           
            $state =  trim($_POST["state"]);
            $province = trim($_POST["province"]);
@@ -225,14 +225,14 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             // Update the author data 
             if (!empty($uploadedFile)) {
                 // If a new file is uploaded, update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, tiktokLink = ?, notes = ?, userfile = ?, filetype = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $tiktokLink, $notes, $uploadedFile, $fileType, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $location_id, $library_type_id, $library_percentage_id, $id);
             } else {
                 // If no new file is uploaded, don't update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, tiktokLink = ?, notes = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $tiktokLink, $notes, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $location_id, $library_type_id, $library_percentage_id, $id);
             }
 
                 mysqli_stmt_execute($stmt_update_library);
@@ -269,7 +269,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                     <div class="col-md-6 mt-4">
                         <div class="input-group input-group-outline mt-2">
                                 <select name="library_percentage_id" id="library_percentage" class="form-control" required>
-                                    <option value="" disabled> -- اختر نسبة المكتبة -- </option>
+                                    <option value="" disabled> -- اختر نوع العميل -- </option>
                                     <?php
                                     foreach ($libraryPercentages as $percentage) {
                                         $selected = ($percentage['id'] == $library_percentage_id) ? 'selected' : ''; // Check if this option is selected
@@ -342,8 +342,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                                     </div>
 
                                 <div class="input-group input-group-outline my-3 me-3">
-                                    <select name="province" id="province" class="form-control" required>
-                                        <option value="" disabled selected>-- اختر الدائرة --</option>
+                                    <select name="city" id="city" class="form-control" required>
+                                        <option value="" disabled selected>-- اختر المدينة --</option>
                                         <!-- Options will be populated dynamically using JavaScript -->
                                     </select>
                                 </div>
@@ -351,8 +351,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                             <div class="col-md-6">
                                 <div class="input-group input-group-outline my-3">
-                                    <select name="city" id="city" class="form-control" required>
-                                        <option value="" disabled selected>-- اختر المدينة --</option>
+                                <select name="province" id="province" class="form-control" required>
+                                        <option value="" disabled selected>-- اختر الدائرة --</option>
                                         <!-- Options will be populated dynamically using JavaScript -->
                                     </select>
                                 </div>
@@ -378,8 +378,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                                 <input type="text" name="mapAddress" class="form-control border pe-2 mb-3" value="<?php echo htmlspecialchars($mapAddress); ?>">
                             </div>
                             <div class="form-group col-md-6">
-                                <label class="form-label">رابط التيكتوك :</label>
-                                <input type="text" name="tiktokLink" class="form-control border pe-2 mb-3" value="<?php echo htmlspecialchars($tiktokLink); ?>">
+                                <label class="form-label">رابط موقع الويب :</label>
+                                <input type="text" name="websiteLink" class="form-control border pe-2 mb-3" value="<?php echo htmlspecialchars($websiteLink); ?>">
                             </div>
                         </div>
                 </div>

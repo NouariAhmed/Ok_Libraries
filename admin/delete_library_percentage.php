@@ -5,7 +5,7 @@ include('secure.php');
 include('header.php');
 ?>
     <div class="container-fluid py-4">
-    <h4 class="mb-3">حذف نوع نسبة</h4>
+    <h4 class="mb-3">حذف نوع عميل</h4>
       <?php
             // Check if the delete_success session variable is set
             if (isset($_SESSION['delete_success']) && $_SESSION['delete_success'] === true) {
@@ -63,7 +63,7 @@ include('header.php');
                             $typeData = mysqli_fetch_assoc($result);
                             mysqli_stmt_close($delete_stmt);
                             echo '
-                            <p class="text-right">هل أنت متأكد أنك تريد حذف نوع النسبة: ' . htmlspecialchars($typeData['library_percentage']) .' ؟</p>
+                            <p class="text-right">هل أنت متأكد أنك تريد حذف نوع العميل: ' . htmlspecialchars($typeData['library_percentage']) .' ؟</p>
                         <form action="' . $_SERVER['PHP_SELF'] . '?id=' . $id . '" method="post" class="d-inline">
                             <button type="submit" name="confirm" value="yes" class="btn btn-danger">نعم</button>
                         </form>
@@ -71,8 +71,8 @@ include('header.php');
                         ';
                     }
                 } else {
-                    echo '<div class="alert alert-warning text-right">لا يمكن حذف نوع النسبة لأنه مستخدم بالفعل من قبل من المكتبات.</div>';
-                    echo '<a href="display_library_percentages.php" class="btn btn-secondary">العودة إلى قائمة أنواع النسب</a>';
+                    echo '<div class="alert alert-warning text-right">لا يمكن حذف نوع العميل لأنه مستخدم بالفعل من قبل من المكتبات.</div>';
+                    echo '<a href="display_library_percentages.php" class="btn btn-secondary">العودة إلى قائمة أنواع العملاء</a>';
                 }
                 mysqli_stmt_close($stmt);
                 
