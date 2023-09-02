@@ -240,10 +240,9 @@ include('header.php');
                 ?>
                     <tr>
                     <td class="align-middle text-sm">
-                    
                             <h6 class="mb-0 text-sm pe-3"><?php echo htmlspecialchars($item["library_name"]);?></h6>
                             <p class="text-xs text-secondary text-bold mb-0 pe-3"><?php echo htmlspecialchars($item["library_last_name"]);?></p>
-                            <p class="text-xs text-primary text-bold mb-0 pe-3"><?php echo htmlspecialchars($item["id"]);?>#</h6>
+                            <p class="text-xs text-warning text-bold mb-0 pe-3"><?php echo htmlspecialchars($item["id"]);?>#</h6>
                       </td>
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["library_type"]);?></h6>
@@ -256,7 +255,7 @@ include('header.php');
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["states"]); ?></h6>
                         <p class="text-xs text-secondary mb-0"><?php echo htmlspecialchars($item["provinces"]); ?></p>
-                        <p class="text-xs text-primary mb-0 text-bold"><?php echo htmlspecialchars($item["cities"]); ?></p>
+                        <p class="text-xs text-warning mb-0 text-bold"><?php echo htmlspecialchars($item["cities"]); ?></p>
                       </td>
                       <td class="align-middle text-sm">
                       <h6 class="mb-0 text-sm"><?php
