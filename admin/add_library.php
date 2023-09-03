@@ -47,6 +47,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $province = $_POST["province"];
   $city = $_POST["city"];
 
+
+  if (isset($_POST['firstCheckbox'])) {
+    $firstCheckboxValue = $_POST['firstCheckbox'];
+} else {
+    $firstCheckboxValue = 'مكتبة فقط'; // Set a default value if not checked
+}
+if (isset($_POST['secondCheckbox'])) {
+    $secondCheckboxValue = $_POST['secondCheckbox'];
+} else {
+    $secondCheckboxValue = 'لا يعمل أونلاين'; // Set a default value if not checked
+}
+
+if (isset($_POST['thirdCheckbox'])) {
+    $thirdCheckboxValue = $_POST['thirdCheckbox'];
+} else {
+    $thirdCheckboxValue = 'لا يملك خدمة التوصيل'; // Set a default value if not checked
+}
+
+if (isset($_POST['fourthCheckbox'])) {
+    $fourthCheckboxValue = $_POST['fourthCheckbox'];
+} else {
+    $fourthCheckboxValue = 'ليس لديه عتاد الإعلام آلي'; // Set a default value if not checked
+}
+
    // Validate library name
     if (empty($library_name)) {
         $library_name_err = "يرجى إدخال اسم المكتبة.";
@@ -164,9 +188,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         move_uploaded_file($_FILES['uploadedFile']['tmp_name'], $uploadedFile);
         }
         // Insert the library data into the database
-        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
-        mysqli_stmt_bind_param($stmt, "sssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $location_id, $user_id, $library_type_id, $library_percentage_id);
+        mysqli_stmt_bind_param($stmt, "sssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $location_id, $user_id, $library_type_id, $library_percentage_id);
         
         mysqli_stmt_execute($stmt);
 
@@ -335,6 +359,29 @@ include('header.php');
                           id="email" name="email" value="<?php echo $email; ?>"
                           <?php if (!empty($email)) echo 'placeholder="الإيميل"'; ?> />
                     <span class="invalid-feedback"><?php echo $email_err; ?></span>
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="form-check col-md-6 me-3 mt-3">
+                    <input class="form-check-input" type="checkbox" value="مكتبة ووراقة" id="fcustomCheck1" name="firstCheckbox">
+                    <label class="custom-control-label" for="customCheck1">مكتبة ووراقة</label>
+                </div>
+
+                <div class="form-check col-md-6 mt-3">
+                    <input class="form-check-input" type="checkbox" value="يعمل أونلاين" id="fcustomCheck2" name="secondCheckbox">
+                    <label class="custom-control-label" for="customCheck2">يعمل أونلاين</label>
+                </div>
+            </div>
+
+            <div class="d-flex">
+                <div class="form-check col-md-6 me-3 mt-3">
+                    <input class="form-check-input" type="checkbox" value="لديه خدمة التوصيل" id="fcustomCheck3" name="thirdCheckbox">
+                    <label class="custom-control-label" for="customCheck3">لديه خدمة التوصيل</label>
+                </div>
+
+                <div class="form-check col-md-6 mt-3">
+                    <input class="form-check-input" type="checkbox" value="لديه عتاد اعلام آلي" id="fcustomCheck4" name="fourthCheckbox">
+                    <label class="custom-control-label" for="customCheck4">لديه عتاد اعلام آلي</label>
                 </div>
             </div>
         

@@ -67,6 +67,11 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $instaLink = htmlspecialchars($item["instaLink"]);
             $mapAddress = htmlspecialchars($item["mapAddress"]);
             $websiteLink = htmlspecialchars($item["websiteLink"]);
+            
+            $firstCheckboxValue =  htmlspecialchars($item["firstCheckbox"]);
+            $secondCheckboxValue =  htmlspecialchars($item["secondCheckbox"]);
+            $thirdCheckboxValue =  htmlspecialchars($item["thirdCheckbox"]);
+            $fourthCheckboxValue = htmlspecialchars($item["fourthCheckbox"]);
 
             $location_id =  htmlspecialchars($item["location_id"]);
            // Fetch the selected library's location details
@@ -112,6 +117,29 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
            $instaLink = trim($_POST["instaLink"]);
            $mapAddress = trim($_POST["mapAddress"]);
            $websiteLink = trim($_POST["websiteLink"]);
+
+           if (isset($_POST['firstCheckbox'])) {
+            $firstCheckboxValue = $_POST['firstCheckbox'];
+        } else {
+            $firstCheckboxValue = 'مكتبة فقط'; // Set a default value if not checked
+        }
+        if (isset($_POST['secondCheckbox'])) {
+            $secondCheckboxValue = $_POST['secondCheckbox'];
+        } else {
+            $secondCheckboxValue = 'لا يعمل أونلاين'; // Set a default value if not checked
+        }
+        
+        if (isset($_POST['thirdCheckbox'])) {
+            $thirdCheckboxValue = $_POST['thirdCheckbox'];
+        } else {
+            $thirdCheckboxValue = 'لا يملك خدمة التوصيل'; // Set a default value if not checked
+        }
+        
+        if (isset($_POST['fourthCheckbox'])) {
+            $fourthCheckboxValue = $_POST['fourthCheckbox'];
+        } else {
+            $fourthCheckboxValue = 'ليس لديه عتاد الإعلام آلي'; // Set a default value if not checked
+        }
           
            $state =  trim($_POST["state"]);
            $province = trim($_POST["province"]);
@@ -225,14 +253,14 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             // Update the author data 
             if (!empty($uploadedFile)) {
                 // If a new file is uploaded, update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
             } else {
                 // If no new file is uploaded, don't update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
             }
 
                 mysqli_stmt_execute($stmt_update_library);
@@ -318,6 +346,29 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                         <input type="email" name="email" class="form-control border pe-2 mb-3 <?php echo (!empty($email_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($email); ?>">
                         <span class="invalid-feedback"><?php echo $email_err; ?></span>
                     </div>
+                </div>
+                <div class="d-flex">
+                        <div class="form-check col-md-6 me-3 mt-3">
+                            <input class="form-check-input" type="checkbox" value="مكتبة ووراقة" id="fcustomCheck1" name="firstCheckbox" <?php if ($firstCheckboxValue == 'مكتبة ووراقة') echo 'checked'; ?>>
+                            <label class="custom-control-label" for="customCheck1">مكتبة ووراقة</label>
+                        </div>
+
+                        <div class="form-check col-md-6 mt-3">
+                            <input class="form-check-input" type="checkbox" value="يعمل أونلاين" id="fcustomCheck2" name="secondCheckbox" <?php if ($secondCheckboxValue == 'يعمل أونلاين') echo 'checked'; ?>>
+                            <label class="custom-control-label" for="customCheck2">يعمل أونلاين</label>
+                        </div>
+                </div>
+
+                <div class="d-flex">
+                        <div class="form-check col-md-6 me-3 mt-3">
+                            <input class="form-check-input" type="checkbox" value="لديه خدمة التوصيل" id="fcustomCheck3" name="thirdCheckbox" <?php if ($thirdCheckboxValue == 'لديه خدمة التوصيل') echo 'checked'; ?>>
+                            <label class="custom-control-label" for="customCheck3">لديه خدمة التوصيل</label>
+                        </div>
+
+                        <div class="form-check col-md-6 mt-3">
+                            <input class="form-check-input" type="checkbox" value="لديه عتاد اعلام آلي" id="fcustomCheck4" name="fourthCheckbox" <?php if ($fourthCheckboxValue == 'لديه عتاد اعلام آلي') echo 'checked'; ?>>
+                            <label class="custom-control-label" for="customCheck4">لديه عتاد اعلام آلي</label>
+                        </div>
                 </div>
 
         </div>

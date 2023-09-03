@@ -39,6 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">الهاتف</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">الموقع</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">العنوان</th>
+                                <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">تفاصيل</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">من طرف</th>
                                 <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">ملاحظات</th>
                                 <th class="text-center text-secondary text-lg font-weight-bolder opacity-7">الإجراءات</th>
@@ -111,6 +112,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </a>
                           <?php } ?>
                         </div>
+                      </td>
+                      <td class="align-middle text-sm">
+                        <h6 class="mb-0 text-sm">- <?php echo htmlspecialchars($item["firstCheckbox"]); ?></h6>
+                        <h6 class="mb-0 text-sm">- <?php echo htmlspecialchars($item["secondCheckbox"]); ?></h6>
+                        <h6 class="mb-0 text-sm">- <?php echo htmlspecialchars($item["thirdCheckbox"]); ?></h6>
+                        <h6 class="mb-0 text-sm">- <?php echo htmlspecialchars($item["fourthCheckbox"]); ?></h6>
                       </td>
                       <td class="align-middle text-sm">
                       <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($usernames[$item["inserted_by"]]); ?></h6>
