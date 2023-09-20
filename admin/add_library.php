@@ -62,13 +62,19 @@ if (isset($_POST['secondCheckbox'])) {
 if (isset($_POST['thirdCheckbox'])) {
     $thirdCheckboxValue = $_POST['thirdCheckbox'];
 } else {
-    $thirdCheckboxValue = 'لا يملك خدمة التوصيل'; // Set a default value if not checked
+    $thirdCheckboxValue = 'ليس دار نشر'; // Set a default value if not checked
 }
 
 if (isset($_POST['fourthCheckbox'])) {
     $fourthCheckboxValue = $_POST['fourthCheckbox'];
 } else {
     $fourthCheckboxValue = 'ليس لديه عتاد الإعلام آلي'; // Set a default value if not checked
+}
+
+if (isset($_POST['fifthCheckbox'])) {
+    $fifthCheckboxValue = $_POST['fifthCheckbox'];
+} else {
+    $fifthCheckboxValue = 'لا يملك خدمة الطباعة'; // Set a default value if not checked
 }
 
    // Validate library name
@@ -188,9 +194,9 @@ if (isset($_POST['fourthCheckbox'])) {
         move_uploaded_file($_FILES['uploadedFile']['tmp_name'], $uploadedFile);
         }
         // Insert the library data into the database
-        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
-        mysqli_stmt_bind_param($stmt, "sssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $location_id, $user_id, $library_type_id, $library_percentage_id);
+        mysqli_stmt_bind_param($stmt, "ssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $user_id, $library_type_id, $library_percentage_id);
         
         mysqli_stmt_execute($stmt);
 
@@ -375,8 +381,8 @@ include('header.php');
 
             <div class="d-flex">
                 <div class="form-check col-md-6 me-3 mt-3">
-                    <input class="form-check-input" type="checkbox" value="لديه خدمة التوصيل" id="fcustomCheck3" name="thirdCheckbox">
-                    <label class="custom-control-label" for="customCheck3">لديه خدمة التوصيل</label>
+                    <input class="form-check-input" type="checkbox" value="دار نشر" id="fcustomCheck3" name="thirdCheckbox">
+                    <label class="custom-control-label" for="customCheck3">دار نشر</label>
                 </div>
 
                 <div class="form-check col-md-6 mt-3">
@@ -384,7 +390,13 @@ include('header.php');
                     <label class="custom-control-label" for="customCheck4">لديه عتاد اعلام آلي</label>
                 </div>
             </div>
-        
+
+            <div class="d-flex">
+                <div class="form-check col-md-6 me-3 mt-3">
+                    <input class="form-check-input" type="checkbox" value="طباعة" id="fcustomCheck5" name="fifthCheckbox">
+                    <label class="custom-control-label" for="customCheck5">طباعة</label>
+                </div>
+            </div>
           </div>
 
         <!-- Location Info Section -->

@@ -72,6 +72,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $secondCheckboxValue =  htmlspecialchars($item["secondCheckbox"]);
             $thirdCheckboxValue =  htmlspecialchars($item["thirdCheckbox"]);
             $fourthCheckboxValue = htmlspecialchars($item["fourthCheckbox"]);
+            $fifthCheckboxValue = htmlspecialchars($item["fifthCheckbox"]);
+
 
             $location_id =  htmlspecialchars($item["location_id"]);
            // Fetch the selected library's location details
@@ -132,13 +134,19 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
         if (isset($_POST['thirdCheckbox'])) {
             $thirdCheckboxValue = $_POST['thirdCheckbox'];
         } else {
-            $thirdCheckboxValue = 'لا يملك خدمة التوصيل'; // Set a default value if not checked
+            $thirdCheckboxValue = 'ليس دار نشر'; // Set a default value if not checked
         }
         
         if (isset($_POST['fourthCheckbox'])) {
             $fourthCheckboxValue = $_POST['fourthCheckbox'];
         } else {
             $fourthCheckboxValue = 'ليس لديه عتاد الإعلام آلي'; // Set a default value if not checked
+        }
+
+        if (isset($_POST['fifthCheckbox'])) {
+            $fifthCheckboxValue = $_POST['fifthCheckbox'];
+        } else {
+            $fifthCheckboxValue = 'لا يملك خدمة الطباعة'; // Set a default value if not checked
         }
           
            $state =  trim($_POST["state"]);
@@ -253,14 +261,14 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             // Update the author data 
             if (!empty($uploadedFile)) {
                 // If a new file is uploaded, update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "ssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
             } else {
                 // If no new file is uploaded, don't update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "ssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
             }
 
                 mysqli_stmt_execute($stmt_update_library);
@@ -361,8 +369,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                 <div class="d-flex">
                         <div class="form-check col-md-6 me-3 mt-3">
-                            <input class="form-check-input" type="checkbox" value="لديه خدمة التوصيل" id="fcustomCheck3" name="thirdCheckbox" <?php if ($thirdCheckboxValue == 'لديه خدمة التوصيل') echo 'checked'; ?>>
-                            <label class="custom-control-label" for="customCheck3">لديه خدمة التوصيل</label>
+                            <input class="form-check-input" type="checkbox" value="دار نشر" id="fcustomCheck3" name="thirdCheckbox" <?php if ($thirdCheckboxValue == 'دار نشر') echo 'checked'; ?>>
+                            <label class="custom-control-label" for="customCheck3">دار نشر</label>
                         </div>
 
                         <div class="form-check col-md-6 mt-3">
@@ -370,6 +378,12 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                             <label class="custom-control-label" for="customCheck4">لديه عتاد اعلام آلي</label>
                         </div>
                 </div>
+
+                <div class="d-flex">
+                        <div class="form-check col-md-6 me-3 mt-3">
+                            <input class="form-check-input" type="checkbox" value="طباعة" id="fcustomCheck5" name="fifthCheckbox" <?php if ($fifthCheckboxValue == 'طباعة') echo 'checked'; ?>>
+                            <label class="custom-control-label" for="customCheck5">طباعة</label>
+                        </div>
 
         </div>
     

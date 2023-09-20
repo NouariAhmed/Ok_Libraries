@@ -331,6 +331,8 @@ include('header.php');
                         <h6 class="mb-0 text-xs">- <?php echo htmlspecialchars($item["secondCheckbox"]); ?></h6>
                         <h6 class="mb-0 text-xs">- <?php echo htmlspecialchars($item["thirdCheckbox"]); ?></h6>
                         <h6 class="mb-0 text-xs">- <?php echo htmlspecialchars($item["fourthCheckbox"]); ?></h6>
+                        <h6 class="mb-0 text-xs">- <?php echo htmlspecialchars($item["fifthCheckbox"]); ?></h6>
+
                       </td>
                       <td class="align-middle text-sm">
                       <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($usernames[$item["inserted_by"]]); ?></h6>
