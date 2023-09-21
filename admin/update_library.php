@@ -291,7 +291,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                     <div class="col-md-6 mt-4">
                         <div class="input-group input-group-outline mt-2">
                             <select name="library_type_id" id="library_type" class="form-control" required>
-                                <option value="" disabled> -- اختر نوع المكتبة -- </option>
+                                <option value="" disabled> -- اختر نوع المكتبة  * -- </option>
                                 <?php
                                 foreach ($libraryTypes as $type) {
                                     $selected = ($type['id'] == $library_type_id) ? 'selected' : ''; // Check if this option is selected
@@ -305,7 +305,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                     <div class="col-md-6 mt-4">
                         <div class="input-group input-group-outline mt-2">
                                 <select name="library_percentage_id" id="library_percentage" class="form-control" required>
-                                    <option value="" disabled> -- اختر نوع العميل -- </option>
+                                    <option value="" disabled> -- اختر نوع العميل  * -- </option>
                                     <?php
                                     foreach ($libraryPercentages as $percentage) {
                                         $selected = ($percentage['id'] == $library_percentage_id) ? 'selected' : ''; // Check if this option is selected
@@ -318,8 +318,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                  </div>
                 <div class="row">
-                    <div class="form-group col-md-6">
-                        <label class="form-label">إسم المكتبة :</label>
+                    <div class="form-group col-md-6 mt-3">
+                        <label class="form-label">إسم المكتبة  * :</label>
                         <input type="text" name="library_name" class="form-control border pe-2 mb-3 <?php echo (!empty($library_name_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($library_name); ?>" required>
                         <span class="invalid-feedback"><?php echo $library_name_err; ?></span>
                     </div>
@@ -332,7 +332,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                 <div class="row">
                     <div class="form-group col-md-6">
-                        <label class="form-label">الهاتف :</label>
+                        <label class="form-label">الهاتف  * :</label>
                         <input type="text" name="phone" class="form-control border pe-2 mb-3 <?php echo (!empty($phone_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($phone); ?>" required>
                         <span class="invalid-feedback"><?php echo $phone_err; ?></span>
                     </div>
@@ -345,7 +345,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                 <div class="row">
                     <div class="form-group col-md-6">
-                            <label class="form-label">العنوان :</label>
+                            <label class="form-label">العنوان  * :</label>
                             <input type="text" name="address" class="form-control border pe-2 mb-3 <?php echo (!empty($address_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($address); ?>" required>
                             <span class="invalid-feedback"><?php echo $address_err; ?></span>
                     </div>
@@ -393,7 +393,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                                 <div class="d-flex">
                                     <div class="input-group input-group-outline my-3">
                                         <select name="state" id="state" class="form-control" required>
-                                            <option value="" disabled>-- اختر الولاية --</option>
+                                            <option value="" disabled>-- اختر الولاية  * --</option>
                                             <?php
                                             // Fetch states from the locations table
                                             $statesResult = mysqli_query($conn, "SELECT DISTINCT states FROM locations");
@@ -408,7 +408,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                                 <div class="input-group input-group-outline my-3 me-3">
                                     <select name="city" id="city" class="form-control" required>
-                                        <option value="" disabled selected>-- اختر المدينة --</option>
+                                        <option value="" disabled selected>-- اختر البلدية  * --</option>
                                         <!-- Options will be populated dynamically using JavaScript -->
                                     </select>
                                 </div>
@@ -417,7 +417,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                             <div class="col-md-6">
                                 <div class="input-group input-group-outline my-3">
                                 <select name="province" id="province" class="form-control" required>
-                                        <option value="" disabled selected>-- اختر الدائرة --</option>
+                                        <option value="" disabled selected>-- اختر الدائرة  * --</option>
                                         <!-- Options will be populated dynamically using JavaScript -->
                                     </select>
                                 </div>
@@ -505,7 +505,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             .then(response => response.json())
             .then(cities => {
                 // Clear existing options
-                cityDropdown.innerHTML = '<option value="" disabled selected>-- اختر المدينة --</option>';
+                cityDropdown.innerHTML = '<option value="" disabled selected>-- اختر البلدية  * --</option>';
 
                 // Populate city options
                 cities.forEach(city => {
@@ -533,7 +533,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             .then(response => response.json())
             .then(provinces => {
                 // Clear existing options
-                provinceDropdown.innerHTML = '<option value="" disabled selected>-- اختر الدائرة --</option>';
+                provinceDropdown.innerHTML = '<option value="" disabled selected>-- اختر الدائرة  * --</option>';
 
                 // Populate province options
                 provinces.forEach(province => {
@@ -560,7 +560,7 @@ stateDropdown.addEventListener('change', () => {
     const selectedState = stateDropdown.value;
     // Clear province and city dropdowns
     provinceDropdown.innerHTML = '<option value="" disabled selected>-- اختر الدائرة --</option>';
-    cityDropdown.innerHTML = '<option value="" disabled selected>-- اختر المدينة --</option>';
+    cityDropdown.innerHTML = '<option value="" disabled selected>-- اختر البلدية --</option>';
     // Fetch and populate provinces for the selected state
     fetchProvinces(selectedState);
 });

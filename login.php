@@ -91,6 +91,8 @@ if (empty($uname_err) && empty($pwd_err)) {
   </title>
   <!--     Fonts and icons     -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+  <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/droid-arabic-kufi" type="text/css"/>
+
   <!-- Nucleo Icons -->
   <link href="assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="assets/css/nucleo-svg.css" rel="stylesheet" />
@@ -112,23 +114,7 @@ if (empty($uname_err) && empty($pwd_err)) {
               <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                 <div class="bg-gradient-secondary shadow-primary border-radius-lg py-3 pe-1">
                   <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">تسجيل الدخول</h4>
-                  <div class="row mt-3">
-                    <div class="col-2 text-center ms-auto">
-                      <a class="btn btn-link px-3" href="javascript:;">
-                        <i class="fa fa-facebook text-white text-lg"></i>
-                      </a>
-                    </div>
-                    <div class="col-2 text-center px-1">
-                      <a class="btn btn-link px-3" href="javascript:;">
-                        <i class="fa fa-github text-white text-lg"></i>
-                      </a>
-                    </div>
-                    <div class="col-2 text-center me-auto">
-                      <a class="btn btn-link px-3" href="javascript:;">
-                        <i class="fa fa-google text-white text-lg"></i>
-                      </a>
-                    </div>
-                  </div>
+                  <h6 class="text-white text-center mt-2 mb-0">منصة المكتبات</h6>
                 </div>
               </div>
               <div class="card-body">
@@ -143,12 +129,12 @@ if (empty($uname_err) && empty($pwd_err)) {
                     <input type="password" class="form-control <?php echo (!empty($pwd_err)) ? 'is-invalid' : ''; ?>" id="password" name="txt_pwd" />
                     <span class="invalid-feedback"><?php echo $pwd_err; ?></span>
                   </div>
-                  <div class="form-check form-switch d-flex align-items-center mb-3">
+                  <div class="form-check form-switch d-flex align-items-center mb-3" dir="rtl">
+                  <label class="form-check-label mb-0 ms-2" for="rememberMe">تذكرني</label>
                     <input class="form-check-input" type="checkbox" id="rememberMe">
-                    <label class="form-check-label mb-0 ms-2" for="rememberMe">Remember me</label>
                   </div>
                   <div class="text-center">
-                    <button type="submit" class="btn bg-gradient-info w-100 my-4 mb-2" name="but_submit">Log in</button>
+                    <button type="submit" class="btn bg-gradient-info w-100 my-4 mb-2" name="but_submit">تسجيل الدخول</button>
                   </div>
                   <p class="mt-4 text-sm text-center">
                    لا تملك حسابا بعد؟

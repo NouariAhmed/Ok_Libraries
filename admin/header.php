@@ -51,6 +51,10 @@
             <span class="nav-link-text me-1">المكتبات</span>
           </a>
         </li>
+        <?php
+        $currentDate = date("Y-m-d");
+
+        if ($_SESSION['role'] === "admin") { ?>
         <li class="nav-item">
           <a class="nav-link" href="display_library_types.php?page=1">
             <div class="text-white text-center ms-2 d-flex align-items-center justify-content-center">
@@ -67,10 +71,6 @@
             <span class="nav-link-text me-1">أنواع العملاء</span>
           </a>
         </li>
-        <?php
-        $currentDate = date("Y-m-d");
-
-        if ($_SESSION['role'] === "admin") { ?>
         <li class="nav-item">
           <a class="nav-link " href="display_users.php">
             <div class="text-white text-center ms-2 d-flex align-items-center justify-content-center">

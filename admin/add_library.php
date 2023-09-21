@@ -194,6 +194,8 @@ if (isset($_POST['fifthCheckbox'])) {
         move_uploaded_file($_FILES['uploadedFile']['tmp_name'], $uploadedFile);
         }
         // Insert the library data into the database
+        mysqli_query($conn, "SET time_zone = '+01:00'");
+
         $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
         mysqli_stmt_bind_param($stmt, "ssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $user_id, $library_type_id, $library_percentage_id);
@@ -280,7 +282,7 @@ include('header.php');
                 <div class="d-flex">
                     <div class="input-group input-group-outline m-3">
                         <select class="form-control" id="library_type" name="library_type" required>
-                            <option value="" disabled selected>-- اختر نوع المكتبة --</option>
+                            <option value="" disabled selected>-- اختر نوع المكتبة * --</option>
                             <?php
                             // Fetch library types from the database
                             $sql_fetch_library_types = "SELECT * FROM library_types";
@@ -294,7 +296,7 @@ include('header.php');
 
                     <div class="input-group input-group-outline my-3">
                         <select class="form-control" id="library_percentage" name="library_percentage" required>
-                            <option value="" disabled selected>-- اختر نوع العميل --</option>
+                            <option value="" disabled selected>-- اختر نوع العميل * --</option>
                             <?php
                             // Fetch library percentages from the database
                             $sql_fetch_library_percentages = "SELECT * FROM library_percentages";
@@ -310,7 +312,7 @@ include('header.php');
             <div class="d-flex">
                 <div class="input-group input-group-outline m-3">
                     <?php if (empty($library_name)): ?>
-                        <label for="library_name" class="form-label">اسم المكتبة</label>
+                        <label for="library_name" class="form-label">اسم المكتبة * </label>
                     <?php endif; ?>
                     <input type="text" class="form-control <?php echo (!empty($library_name_err)) ? 'is-invalid' : ''; ?>"
                           id="library_name" name="library_name" value="<?php echo $library_name; ?>" required
@@ -329,7 +331,7 @@ include('header.php');
             <div class="d-flex">
                 <div class="input-group input-group-outline m-3">
                     <?php if (empty($phone)): ?>
-                        <label for="phone" class="form-label">الهاتف</label>
+                        <label for="phone" class="form-label">الهاتف * </label>
                     <?php endif; ?>
                     <input type="text" class="form-control <?php echo (!empty($phone_err)) ? 'is-invalid' : ''; ?>"
                           id="phone" name="phone" value="<?php echo $phone; ?>" required
@@ -349,7 +351,7 @@ include('header.php');
             <div class="d-flex">
                 <div class="input-group input-group-outline m-3">
                     <?php if (empty($address)): ?>
-                        <label for="address" class="form-label">العنوان</label>
+                        <label for="address" class="form-label">العنوان * </label>
                     <?php endif; ?>
                     <input type="text" class="form-control <?php echo (!empty($address_err)) ? 'is-invalid' : ''; ?>"
                           id="address" name="address" value="<?php echo $address; ?>" required
@@ -405,7 +407,7 @@ include('header.php');
             <div class="d-flex">
                 <div class="input-group input-group-outline m-3">
                     <select class="form-control" id="state" name="state" required>
-                        <option value="" disabled selected>-- الولاية --</option>
+                        <option value="" disabled selected>-- الولاية  * --</option>
                         <?php while ($row = mysqli_fetch_assoc($result_states)) { ?>
                             <option value="<?php echo $row['states']; ?>"><?php echo $row['states']; ?></option>
                         <?php } ?>
@@ -414,7 +416,7 @@ include('header.php');
 
                 <div class="input-group input-group-outline my-3">
                       <select class="form-control" id="city" name="city" required>
-                          <option value="">-- البلدية --</option>
+                          <option value="">-- البلدية  * --</option>
                           <?php if (isset($result_cities)) { ?>
                               <?php while ($row = mysqli_fetch_assoc($result_cities)) { ?>
                                   <option value="<?php echo $row['cities']; ?>" data-province="<?php echo $row['provinces']; ?>" data-state="<?php echo $row['states']; ?>"><?php echo $row['cities']; ?></option>
@@ -428,7 +430,7 @@ include('header.php');
                <div class="col-md-6 ps-3">
                     <div class="input-group input-group-outline m-3">
                         <select class="form-control" id="province" name="province" required>
-                            <option value="" disabled selected>-- الدائرة --</option>
+                            <option value="" disabled selected>-- الدائرة  * --</option>
                             <?php if (isset($result_provinces)) { ?>
                                 <?php while ($row = mysqli_fetch_assoc($result_provinces)) { ?>
                                     <option value="<?php echo $row['provinces']; ?>" data-state="<?php echo $row['states']; ?>"><?php echo $row['provinces']; ?></option>
@@ -463,10 +465,10 @@ include('header.php');
                     <div class="d-flex">
                     <div class="input-group input-group-outline m-3">
                     <?php if (empty($mapAddress)): ?>
-                    <label for="mapAddress" class="form-label">رابط الموقع على خرائط قوقل</label>
+                    <label for="mapAddress" class="form-label">رابط خرائط قوقل</label>
                   <?php endif; ?>
                   <input type="text" class="form-control" id="mapAddress" name="mapAddress" value="<?php echo $mapAddress; ?>"
-                    <?php if (!empty($mapAddress)) echo 'placeholder="رابط الموقع على خرائط قوقل"'; ?> />
+                    <?php if (!empty($mapAddress)) echo 'placeholder="رابط خرائط قوقل"'; ?> />
                     </div>
                     <div class="input-group input-group-outline my-3">
                     <?php if (empty($websiteLink)): ?>
