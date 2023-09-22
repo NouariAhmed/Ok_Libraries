@@ -7,6 +7,13 @@ $table = "libraries";
 $itemsPerPage = 10; // Number of items per page
 
 $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? intval($_GET['page']) : 1;
+// Get username           
+$usernames = [];
+$sql_users = "SELECT id, username FROM users";
+$result_users = mysqli_query($conn, $sql_users);
+while ($user = mysqli_fetch_assoc($result_users)) {
+    $usernames[$user['id']] = $user['username'];
+}
 
 // Get the total number of items in the database
 $sql = "SELECT COUNT(*) AS total_items FROM $table";
@@ -30,14 +37,23 @@ $selectedStates = isset($_GET['states']) ? $_GET['states'] : 'all';
 $selectedProvinces = isset($_GET['provinces']) ? $_GET['provinces'] : 'all';
 $selectedCities = isset($_GET['cities']) ? $_GET['cities'] : 'all';
 
+$sessionUserId = $_SESSION['id']; 
+$userRole = $_SESSION['role']; 
 
-// Construct the SQL query based on selected filters
-$sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
-        INNER JOIN locations AS loc ON l.location_id = loc.location_id
-        LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-        LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
-        WHERE 1 = 1"; // Initial SQL with a dummy condition
-
+if ($userRole === 'admin') {
+  // For admin users, display all libraries
+  $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
+          INNER JOIN locations AS loc ON l.location_id = loc.location_id
+          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id WHERE 1 = 1";
+} elseif ($userRole === 'member') {
+  // For member users, display only their own libraries
+  $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
+          INNER JOIN locations AS loc ON l.location_id = loc.location_id
+          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
+          WHERE l.inserted_by = $sessionUserId";
+}
 
 $bindTypes = ''; // String to store parameter types
 $bindValues = []; // Array to store parameter values
@@ -92,13 +108,22 @@ $totalFilteredItems = $countRow['total_filtered_items'];
 // Calculate Total Pages
 $totalPages = ceil($totalFilteredItems / $itemsPerPage);
 
-// Construct the main SQL query for pagination
-$sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
-        FROM libraries AS l
-        INNER JOIN locations AS loc ON l.location_id = loc.location_id
-        LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-        LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
-        WHERE 1 = 1";
+if ($userRole === 'admin') {
+  // For admin users, display all libraries
+  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
+          FROM libraries AS l
+          INNER JOIN locations AS loc ON l.location_id = loc.location_id
+          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id";
+} elseif ($userRole === 'member') {
+  // For member users, display only their own libraries
+  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
+          FROM libraries AS l
+          INNER JOIN locations AS loc ON l.location_id = loc.location_id
+          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
+          WHERE l.inserted_by = $sessionUserId";
+}
         
 if ($selectedLibraryType !== 'all') {
     $sql .= " AND lt.library_type = ?";
@@ -262,13 +287,6 @@ include('header.php');
                   </thead>
                   <tbody>
                   <?php
-                 
-                    $usernames = [];
-                    $sql_users = "SELECT id, username FROM users";
-                    $result_users = mysqli_query($conn, $sql_users);
-                    while ($user = mysqli_fetch_assoc($result_users)) {
-                        $usernames[$user['id']] = $user['username'];
-                    }
 
                 foreach ($items as $item) {    
                 ?>
@@ -285,6 +303,8 @@ include('header.php');
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["phone"]);?></h6>
                         <p class="text-xs text-secondary text-bold mb-0"><?php echo htmlspecialchars($item["second_phone"]);?></p>
+                        <p class="text-xs text-warning text-bold mb-0"><?php echo 'التلاميذ: '.htmlspecialchars($item["student_phone"]);?></p>
+
                       </td>
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["states"]); ?></h6>

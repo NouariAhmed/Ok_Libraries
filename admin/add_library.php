@@ -1,9 +1,8 @@
 <?php
 include('../connect.php');
 // Initialize variables
-$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
-$library_name_err = $address_err = $phone_err = $second_phone_err = $email_err = $state_err = $province_err = $city_err = $file_err = $register_err = "";
-
+$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $student_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
+$library_name_err = $address_err = $phone_err = $second_phone_err = $student_phone_err = $email_err = $state_err = $province_err = $city_err = $file_err = $register_err = "";
 
 // Fetch states from the database
 $sql_fetch_states = "SELECT DISTINCT states FROM locations";
@@ -23,8 +22,6 @@ if (isset($_POST['selected_province'])) {
     $result_cities = mysqli_query($conn, $sql_fetch_cities);
 }
 
-
-
 // Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Get the form data
@@ -35,6 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $address = trim($_POST["address"]);
   $phone = trim($_POST["phone"]);
   $second_phone = trim($_POST["second_phone"]);
+  $student_phone = trim($_POST["student_phone"]);
   $email = trim($_POST["email"]);
   $notes = trim($_POST["notes"]);
 
@@ -46,7 +44,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $state = $_POST["state"];
   $province = $_POST["province"];
   $city = $_POST["city"];
-
 
   if (isset($_POST['firstCheckbox'])) {
     $firstCheckboxValue = $_POST['firstCheckbox'];
@@ -90,44 +87,63 @@ if (isset($_POST['fifthCheckbox'])) {
 
   $phonePattern = "/^\+?\d{1,4}?\s?\(?\d{1,4}?\)?[0-9\- ]+$/";
 
-  // Validate primary phone
-  if (!empty($phone) && !preg_match($phonePattern, $phone)) {
-      $phone_err = "رقم هاتف غير صالح.";
-  } else {
-      // Check if phone number already exists in the database (in phone or second_phone column)
-      $existingPhoneQuery = "SELECT id, library_name FROM libraries WHERE phone = ? OR second_phone = ?";
-      $stmt_existingPhone = mysqli_prepare($conn, $existingPhoneQuery);
-      mysqli_stmt_bind_param($stmt_existingPhone, "ss", $phone, $phone);
-      mysqli_stmt_execute($stmt_existingPhone);
-      mysqli_stmt_store_result($stmt_existingPhone);
-      if (mysqli_stmt_num_rows($stmt_existingPhone) > 0) {
-          mysqli_stmt_bind_result($stmt_existingPhone, $existingLibaryId, $existingLibraryName);
-          mysqli_stmt_fetch($stmt_existingPhone);
-          $phone_err = "رقم الهاتف مستخدم بالفعل مع مكتبة: $existingLibraryName (رقم المكتبة: $existingLibaryId)";
-      }
-      mysqli_stmt_close($stmt_existingPhone);
-  }
-  
-  // Validate secondary phone
-  if (!empty($second_phone) && !preg_match($phonePattern, $second_phone)) {
-      $second_phone_err = "رقم هاتف ثانوي غير صالح.";
-  } else {
-      // Check if secondary phone number already exists in the database (in phone or second_phone column)
-      if (!empty($second_phone)) {
-          $existingSecondPhoneQuery = "SELECT id, library_name FROM libraries WHERE phone = ? OR second_phone = ?";
-          $stmt_existingSecondPhone = mysqli_prepare($conn, $existingSecondPhoneQuery);
-          mysqli_stmt_bind_param($stmt_existingSecondPhone, "ss", $second_phone, $second_phone);
-          mysqli_stmt_execute($stmt_existingSecondPhone);
-          mysqli_stmt_store_result($stmt_existingSecondPhone);
-          if (mysqli_stmt_num_rows($stmt_existingSecondPhone) > 0) {
-              mysqli_stmt_bind_result($stmt_existingSecondPhone, $existingLibaryId, $existingLibraryName);
-              mysqli_stmt_fetch($stmt_existingSecondPhone);
-              $second_phone_err = "رقم الهاتف الثانوي مستخدم بالفعل مع مكتبة: $existingLibraryName (رقم المكتبة: $existingLibaryId)";
-          }
-          mysqli_stmt_close($stmt_existingSecondPhone);
-      }
-  }
+    // Validate primary phone
+    if (!empty($phone) && (!preg_match($phonePattern, $phone) || strlen($phone) > 10)) {
+        $phone_err = "رقم هاتف غير صالح.";
+    } else {
+        // Check if phone number already exists in the database (in phone, second_phone, or student_phone column)
+        $existingPhoneQuery = "SELECT id, library_name FROM libraries WHERE phone = ? OR second_phone = ? OR student_phone = ?";
+        $stmt_existingPhone = mysqli_prepare($conn, $existingPhoneQuery);
+        mysqli_stmt_bind_param($stmt_existingPhone, "sss", $phone, $phone, $phone);
+        mysqli_stmt_execute($stmt_existingPhone);
+        mysqli_stmt_store_result($stmt_existingPhone);
+        if (mysqli_stmt_num_rows($stmt_existingPhone) > 0) {
+            mysqli_stmt_bind_result($stmt_existingPhone, $existingLibaryId, $existingLibraryName);
+            mysqli_stmt_fetch($stmt_existingPhone);
+            $phone_err = "رقم الهاتف مستخدم بالفعل مع مكتبة: $existingLibraryName (رقم المكتبة: $existingLibaryId)";
+        }
+        mysqli_stmt_close($stmt_existingPhone);
+    }
 
+    // Validate secondary phone
+    if (!empty($second_phone) && (!preg_match($phonePattern, $second_phone) || strlen($second_phone) > 10)) {
+        $second_phone_err = "رقم هاتف ثانوي غير صالح.";
+    } else {
+        // Check if secondary phone number already exists in the database (in phone, second_phone, or student_phone column)
+        if (!empty($second_phone)) {
+            $existingSecondPhoneQuery = "SELECT id, library_name FROM libraries WHERE phone = ? OR second_phone = ? OR student_phone = ?";
+            $stmt_existingSecondPhone = mysqli_prepare($conn, $existingSecondPhoneQuery);
+            mysqli_stmt_bind_param($stmt_existingSecondPhone, "sss", $second_phone, $second_phone, $second_phone);
+            mysqli_stmt_execute($stmt_existingSecondPhone);
+            mysqli_stmt_store_result($stmt_existingSecondPhone);
+            if (mysqli_stmt_num_rows($stmt_existingSecondPhone) > 0) {
+                mysqli_stmt_bind_result($stmt_existingSecondPhone, $existingLibaryId, $existingLibraryName);
+                mysqli_stmt_fetch($stmt_existingSecondPhone);
+                $second_phone_err = "رقم الهاتف الثانوي مستخدم بالفعل مع مكتبة: $existingLibraryName (رقم المكتبة: $existingLibaryId)";
+            }
+            mysqli_stmt_close($stmt_existingSecondPhone);
+        }
+    }
+
+    // Validate student phone
+    if (!empty($student_phone) && (!preg_match($phonePattern, $student_phone) || strlen($student_phone) > 10)) {
+        $student_phone_err = "رقم الهاتف للتلاميذ غير صالح.";
+    } else {
+        // Check if student phone number already exists in the database (in phone, second_phone, or student_phone column)
+        if (!empty($student_phone)) {
+            $existingStudentPhoneQuery = "SELECT id, library_name FROM libraries WHERE phone = ? OR second_phone = ? OR student_phone = ?";
+            $stmt_existingStudentPhone = mysqli_prepare($conn, $existingStudentPhoneQuery);
+            mysqli_stmt_bind_param($stmt_existingStudentPhone, "sss", $student_phone, $student_phone, $student_phone);
+            mysqli_stmt_execute($stmt_existingStudentPhone);
+            mysqli_stmt_store_result($stmt_existingStudentPhone);
+            if (mysqli_stmt_num_rows($stmt_existingStudentPhone) > 0) {
+                mysqli_stmt_bind_result($stmt_existingStudentPhone, $existingLibaryId, $existingLibraryName);
+                mysqli_stmt_fetch($stmt_existingStudentPhone);
+                $student_phone_err = "رقم هاتف التلاميذ مستخدم بالفعل مع مكتبة: $existingLibraryName (رقم المكتبة: $existingLibaryId)";
+            }
+            mysqli_stmt_close($stmt_existingStudentPhone);
+        }
+    }
   // Validate email
   if (!empty($email)) {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -165,7 +181,7 @@ if (isset($_POST['fifthCheckbox'])) {
   }
 
   // If there are no errors, proceed with registration
-  if (empty($library_name_err) && empty($address_err) && empty($phone_err) && empty($second_phone_err) && empty($email_err) && empty($state_err) && empty($province_err) && empty($city_err)  && empty($file_err)) {
+  if (empty($library_name_err) && empty($address_err) && empty($phone_err) && empty($second_phone_err) && empty($student_phone_err) && empty($email_err) && empty($state_err) && empty($province_err) && empty($city_err)  && empty($file_err)) {
     include('../connect.php');
     session_start();
     $user_id = $_SESSION['id'];
@@ -196,9 +212,9 @@ if (isset($_POST['fifthCheckbox'])) {
         // Insert the library data into the database
         mysqli_query($conn, "SET time_zone = '+01:00'");
 
-        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, student_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
-        mysqli_stmt_bind_param($stmt, "ssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $user_id, $library_type_id, $library_percentage_id);
+        mysqli_stmt_bind_param($stmt, "sssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $user_id, $library_type_id, $library_percentage_id);
         
         mysqli_stmt_execute($stmt);
 
@@ -252,26 +268,67 @@ include('header.php');
             position: absolute;
         }
     </style>
-    <script>
-        var progressBar = document.getElementById("myProgressBar");
-        var progressText = document.querySelector(".progress-text");
-        var successMessage = document.getElementById("successMessage");
+<script>
+    var progressContainer = document.querySelector(".progress-container");
+    var progressBar = document.getElementById("myProgressBar");
+    var progressText = document.querySelector(".progress-text");
+    var successMessage = document.getElementById("successMessage");
 
-        // Simulate progress
-        var progress = 0;
-        var interval = setInterval(function () {
-            progress += 10;
-            progressBar.style.width = progress + "%";
-            progressText.textContent = "يتم إضافة المكتبة " + progress + "%";
-            if (progress >= 100) {
-                clearInterval(interval);
-                progressBar.style.display = "none";
-                progressText.style.display = "none";
-                successMessage.style.display = "block";
-            }
-        }, 250);
-    </script>
-<?php unset($_SESSION['register_success_msg']); }  ?>
+    // Simulate progress
+    var progress = 0;
+    var interval = setInterval(function () {
+        progress += 10;
+        progressBar.style.width = progress + "%";
+        progressText.textContent = "يتم إضافة المكتبة " + progress + "%";
+        if (progress >= 100) {
+            clearInterval(interval);
+            progressContainer.style.display = "none"; // Hide the entire progress container
+            successMessage.style.display = "block";
+        }
+    }, 250);
+</script>
+
+        <?php 
+$sessionUserId = $_SESSION['id']; 
+$userRole = $_SESSION['role'];
+$register_success_msg = isset($_SESSION['register_success_msg']) ? $_SESSION['register_success_msg'] : "";
+
+// Check if the user has reached 100 libraries
+$userLibraryCount = 100; // Change this to the actual count you want to check
+if ($userRole === 'member') {
+    $sql = "SELECT COUNT(*) AS library_count FROM libraries WHERE inserted_by = $sessionUserId";
+    $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_assoc($result);
+        $libraryCount = $row['library_count'];
+        if ($libraryCount == $userLibraryCount) {
+            ?>
+                <div class="modal fade" id="congratulationModal" tabindex="-1" aria-labelledby="congratulationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="congratulationModalLabel">تهانينا!</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                لقد قمت بإضافة <?php echo $libraryCount; ?> مكتبة. 🎉 تهانينا على إنجازك!
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php
+
+            // Display a JavaScript function to show the modal
+            echo '<script>';
+            echo 'jQuery(document).ready(function() {';
+            echo '   jQuery("#congratulationModal").modal("show");';
+            echo '});';
+            echo '</script>';
+        }
+}
+ unset($_SESSION['register_success_msg']); }  ?>
 
 
         <form role="form" action="" method="post" enctype="multipart/form-data">
@@ -349,14 +406,15 @@ include('header.php');
                 </div>
             </div>
             <div class="d-flex">
+
                 <div class="input-group input-group-outline m-3">
-                    <?php if (empty($address)): ?>
-                        <label for="address" class="form-label">العنوان * </label>
+                    <?php if (empty($student_phone)): ?>
+                        <label for="student_phone" class="form-label">الهاتف الخاص بالتلاميذ</label>
                     <?php endif; ?>
-                    <input type="text" class="form-control <?php echo (!empty($address_err)) ? 'is-invalid' : ''; ?>"
-                          id="address" name="address" value="<?php echo $address; ?>" required
-                          <?php if (!empty($address)) echo 'placeholder="العنوان"'; ?> />
-                    <span class="invalid-feedback"><?php echo $address_err; ?></span>
+                    <input type="text" class="form-control <?php echo (!empty($student_phone_err)) ? 'is-invalid' : ''; ?>"
+                          id="student_phone" name="student_phone" value="<?php echo $student_phone; ?>"
+                          <?php if (!empty($student_phone)) echo 'placeholder="الهاتف الخاص بالتلاميذ"'; ?> />
+                    <span class="invalid-feedback"><?php echo $student_phone_err; ?></span>
                 </div>
 
                 <div class="input-group input-group-outline my-3">
@@ -427,7 +485,6 @@ include('header.php');
 
             </div>
             <div class="d-flex">
-               <div class="col-md-6 ps-3">
                     <div class="input-group input-group-outline m-3">
                         <select class="form-control" id="province" name="province" required>
                             <option value="" disabled selected>-- الدائرة  * --</option>
@@ -438,7 +495,16 @@ include('header.php');
                             <?php } ?>
                         </select>
                     </div>
-                 </div>
+
+                    <div class="input-group input-group-outline my-3">
+                        <?php if (empty($address)): ?>
+                            <label for="address" class="form-label">عنوان المكتبة * </label>
+                        <?php endif; ?>
+                        <input type="text" class="form-control <?php echo (!empty($address_err)) ? 'is-invalid' : ''; ?>"
+                            id="address" name="address" value="<?php echo $address; ?>" required
+                            <?php if (!empty($address)) echo 'placeholder="عنوان المكتبة"'; ?> />
+                        <span class="invalid-feedback"><?php echo $address_err; ?></span>
+                    </div>
               </div>
            </div>
 

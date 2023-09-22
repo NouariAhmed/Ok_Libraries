@@ -5,8 +5,8 @@ include('secure.php');
 include('header.php');
 include('../connect.php');
 // Initialize variables
-$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
-$library_name_err = $library_last_name_err = $address_err = $phone_err = $second_phone_err = $email_err = $state_err = $province_err = $city_err = $register_err = $file_err= "";
+$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $student_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
+$library_name_err = $library_last_name_err = $address_err = $phone_err = $second_phone_err = $student_phone_err = $email_err = $state_err = $province_err = $city_err = $register_err = $file_err= "";
 
 // Fetch library types from the database
 $sql_library_types = "SELECT id, library_type FROM library_types";
@@ -43,7 +43,6 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
     $id = isset($_GET['id']) ? $_GET['id'] : '';
     $states = isset($_GET['states']) ? $_GET['states'] : '';
 
-
     if (!empty($id)) {
         $stmt = mysqli_prepare($conn, "SELECT * FROM libraries WHERE id = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
@@ -60,6 +59,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $address = htmlspecialchars($item["address"]);
             $phone = htmlspecialchars($item["phone"]);
             $second_phone = htmlspecialchars($item["second_phone"]);
+            $student_phone = htmlspecialchars($item["student_phone"]);
             $email = htmlspecialchars($item["email"]);
             $notes = htmlspecialchars($item["notes"]);
           
@@ -74,7 +74,6 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $fourthCheckboxValue = htmlspecialchars($item["fourthCheckbox"]);
             $fifthCheckboxValue = htmlspecialchars($item["fifthCheckbox"]);
 
-
             $location_id =  htmlspecialchars($item["location_id"]);
            // Fetch the selected library's location details
             $locationQuery = "SELECT states, provinces, cities FROM locations WHERE location_id = ?";
@@ -87,7 +86,6 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $selectedState = htmlspecialchars($location["states"]);
             $selectedProvince = htmlspecialchars($location["provinces"]);
             $selectedCity = htmlspecialchars($location["cities"]);
-
 
         } else {
             $_SESSION['item_not_found'] = true;
@@ -112,6 +110,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
            $address = trim($_POST["address"]);
            $phone = trim($_POST["phone"]);
            $second_phone = trim($_POST["second_phone"]);
+           $student_phone = trim($_POST["student_phone"]);
            $email = trim($_POST["email"]);
            $notes = trim($_POST["notes"]);
          
@@ -167,43 +166,63 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
             $phonePattern = "/^\+?\d{1,4}?\s?\(?\d{1,4}?\)?[0-9\- ]+$/";
 
-            // Validate primary phone
-            if (!empty($phone) && !preg_match($phonePattern, $phone)) {
-                $phone_err = "رقم هاتف غير صالح.";
-            } else {
-                // Check if phone number already exists in the database (in phone or second_phone column)
-                $existingPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ?) AND id != ?";
-                $stmt_existingPhone = mysqli_prepare($conn, $existingPhoneQuery);
-                mysqli_stmt_bind_param($stmt_existingPhone, "ssi", $phone, $phone, $id);
-                mysqli_stmt_execute($stmt_existingPhone);
-                mysqli_stmt_store_result($stmt_existingPhone);
-                if (mysqli_stmt_num_rows($stmt_existingPhone) > 0) {
-                    mysqli_stmt_bind_result($stmt_existingPhone, $existingAuthorId, $existingAuthorName);
-                    mysqli_stmt_fetch($stmt_existingPhone);
-                    $phone_err = "رقم الهاتف مستخدم بالفعل مع مكتبة: $existingAuthorName (معرف المكتبة: $existingAuthorId)";
-                }
-                mysqli_stmt_close($stmt_existingPhone);
-            }
-            
-            // Validate secondary phone
-            if (!empty($second_phone) && !preg_match($phonePattern, $second_phone)) {
-                $second_phone_err = "رقم هاتف ثانوي غير صالح.";
-            } else {
-                // Check if secondary phone number already exists in the database (in phone or second_phone column)
-                if (!empty($second_phone)) {
-                    $existingSecondPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ?) AND id != ?";
-                    $stmt_existingSecondPhone = mysqli_prepare($conn, $existingSecondPhoneQuery);
-                    mysqli_stmt_bind_param($stmt_existingSecondPhone, "ssi", $second_phone, $second_phone, $id);
-                    mysqli_stmt_execute($stmt_existingSecondPhone);
-                    mysqli_stmt_store_result($stmt_existingSecondPhone);
-                    if (mysqli_stmt_num_rows($stmt_existingSecondPhone) > 0) {
-                        mysqli_stmt_bind_result($stmt_existingSecondPhone, $existingAuthorId, $existingAuthorName);
-                        mysqli_stmt_fetch($stmt_existingSecondPhone);
-                        $second_phone_err = "رقم الهاتف الثانوي مستخدم بالفعل مع مكتبة: $existingAuthorName (معرف المكتبة: $existingAuthorId)";
+                       // Validate primary phone
+                       if (!empty($phone) && (!preg_match($phonePattern, $phone) || strlen($phone) > 10)) {
+                        $phone_err = "رقم هاتف غير صالح.";
+                    } else {
+                        // Check if phone number already exists in the database (in phone, second_phone, or student_phone column)
+                        $existingPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
+                        $stmt_existingPhone = mysqli_prepare($conn, $existingPhoneQuery);
+                        mysqli_stmt_bind_param($stmt_existingPhone, "sssi", $phone, $phone, $phone, $id);
+                        mysqli_stmt_execute($stmt_existingPhone);
+                        mysqli_stmt_store_result($stmt_existingPhone);
+                        if (mysqli_stmt_num_rows($stmt_existingPhone) > 0) {
+                            mysqli_stmt_bind_result($stmt_existingPhone, $existingAuthorId, $existingAuthorName);
+                            mysqli_stmt_fetch($stmt_existingPhone);
+                            $phone_err = "رقم الهاتف مستخدم بالفعل مع مكتبة: $existingAuthorName (معرف المكتبة: $existingAuthorId)";
+                        }
+                        mysqli_stmt_close($stmt_existingPhone);
                     }
-                    mysqli_stmt_close($stmt_existingSecondPhone);
-                }
-            }
+        
+                    // Validate secondary phone
+                    if (!empty($second_phone) && (!preg_match($phonePattern, $second_phone) || strlen($second_phone) > 10)) {
+                        $second_phone_err = "رقم هاتف ثانوي غير صالح.";
+                    } else {
+                        // Check if secondary phone number already exists in the database (in phone, second_phone, or student_phone column)
+                        if (!empty($second_phone)) {
+                            $existingSecondPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
+                            $stmt_existingSecondPhone = mysqli_prepare($conn, $existingSecondPhoneQuery);
+                            mysqli_stmt_bind_param($stmt_existingSecondPhone, "sssi", $second_phone, $second_phone, $second_phone, $id);
+                            mysqli_stmt_execute($stmt_existingSecondPhone);
+                            mysqli_stmt_store_result($stmt_existingSecondPhone);
+                            if (mysqli_stmt_num_rows($stmt_existingSecondPhone) > 0) {
+                                mysqli_stmt_bind_result($stmt_existingSecondPhone, $existingAuthorId, $existingAuthorName);
+                                mysqli_stmt_fetch($stmt_existingSecondPhone);
+                                $second_phone_err = "رقم الهاتف الثانوي مستخدم بالفعل مع مكتبة: $existingAuthorName (معرف المكتبة: $existingAuthorId)";
+                            }
+                            mysqli_stmt_close($stmt_existingSecondPhone);
+                        }
+                    }
+        
+                    // Validate student phone
+                    if (!empty($student_phone) && (!preg_match($phonePattern, $student_phone) || strlen($student_phone) > 10)) {
+                        $student_phone_err = "رقم الهاتف للتلاميذ غير صالح.";
+                    } else {
+                        // Check if student phone number already exists in the database (in phone, second_phone, or student_phone column)
+                        if (!empty($student_phone)) {
+                            $existingStudentPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
+                            $stmt_existingStudentPhone = mysqli_prepare($conn, $existingStudentPhoneQuery);
+                            mysqli_stmt_bind_param($stmt_existingStudentPhone, "sssi", $student_phone, $student_phone, $student_phone, $id);
+                            mysqli_stmt_execute($stmt_existingStudentPhone);
+                            mysqli_stmt_store_result($stmt_existingStudentPhone);
+                            if (mysqli_stmt_num_rows($stmt_existingStudentPhone) > 0) {
+                                mysqli_stmt_bind_result($stmt_existingStudentPhone, $existingAuthorId, $existingAuthorName);
+                                mysqli_stmt_fetch($stmt_existingStudentPhone);
+                                $student_phone_err = "رقم هاتف التلاميذ مستخدم بالفعل مع مكتبة: $existingAuthorName (معرف المكتبة: $existingAuthorId)";
+                            }
+                            mysqli_stmt_close($stmt_existingStudentPhone);
+                        }
+           }
 
             // Validate email
             if (!empty($email)) {
@@ -230,7 +249,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             }
 
             // If there are no errors, proceed with registration
-            if (empty($library_name_err) && empty($address_err) && empty($phone_err) && empty($second_phone_err) && empty($email_err) && empty($state_err) && empty($province_err) && empty($city_err) && empty($file_err)) {
+            if (empty($library_name_err) && empty($address_err) && empty($phone_err) && empty($second_phone_err) && empty($student_phone_err) && empty($email_err) && empty($state_err) && empty($province_err) && empty($city_err) && empty($file_err)) {
              
             // Get location_id based on state, province, and city
             $location_query = "SELECT location_id FROM locations WHERE states = ? AND provinces = ? AND cities = ?";
@@ -261,14 +280,14 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             // Update the author data 
             if (!empty($uploadedFile)) {
                 // If a new file is uploaded, update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "ssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
             } else {
                 // If no new file is uploaded, don't update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "ssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
             }
 
                 mysqli_stmt_execute($stmt_update_library);
@@ -287,7 +306,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
               <h4 class="mb-3">تحديث مكتبة</h4>
               <div class="border rounded p-4 shadow">
                  <h6 class="border-bottom pb-2 mb-3">تحديث معلومات المكتبة</h6>
-                 <div class="row">
+                 <div class="row mb-3">
                     <div class="col-md-6 mt-4">
                         <div class="input-group input-group-outline mt-2">
                             <select name="library_type_id" id="library_type" class="form-control" required>
@@ -318,7 +337,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                  </div>
                 <div class="row">
-                    <div class="form-group col-md-6 mt-3">
+                    <div class="form-group col-md-6">
                         <label class="form-label">إسم المكتبة  * :</label>
                         <input type="text" name="library_name" class="form-control border pe-2 mb-3 <?php echo (!empty($library_name_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($library_name); ?>" required>
                         <span class="invalid-feedback"><?php echo $library_name_err; ?></span>
@@ -345,9 +364,9 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
 
                 <div class="row">
                     <div class="form-group col-md-6">
-                            <label class="form-label">العنوان  * :</label>
-                            <input type="text" name="address" class="form-control border pe-2 mb-3 <?php echo (!empty($address_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($address); ?>" required>
-                            <span class="invalid-feedback"><?php echo $address_err; ?></span>
+                            <label class="form-label">الهاتف الخاص بالتلاميذ :</label>
+                            <input type="text" name="student_phone" class="form-control border pe-2 mb-3 <?php echo (!empty($student_phone_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($student_phone); ?>" required>
+                            <span class="invalid-feedback"><?php echo $student_phone_err; ?></span>
                     </div>
                     <div class="form-group col-md-6">
                         <label class="form-label">الإيميل :</label>
@@ -413,13 +432,16 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="col-md-6">
-                                <div class="input-group input-group-outline my-3">
-                                <select name="province" id="province" class="form-control" required>
-                                        <option value="" disabled selected>-- اختر الدائرة  * --</option>
-                                        <!-- Options will be populated dynamically using JavaScript -->
-                                    </select>
+                            <div class="d-flex">
+                                        <div class="input-group input-group-outline my-3">
+                                            <select name="province" id="province" class="form-control" required>
+                                                <option value="" disabled selected>-- اختر الدائرة  * --</option>
+                                                <!-- Options will be populated dynamically using JavaScript -->
+                                            </select>
+                                        </div>   
+                                <div class="form-group col-md-6 my-3 me-2">
+                                            <input type="text" name="address" class="form-control border pe-2 <?php echo (!empty($address_err)) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($address); ?>" required>
+                                            <span class="invalid-feedback"><?php echo $address_err; ?></span>
                                 </div>
                             </div>
         </div>

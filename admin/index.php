@@ -4,7 +4,16 @@ include('secure.php');
 include('header.php');
 include('../connect.php');
 
-$result = mysqli_query($conn, "SELECT COUNT(*) AS library_count FROM libraries");
+$sessionUserId = $_SESSION['id']; 
+$userRole = $_SESSION['role'];
+if ($userRole === 'admin') {
+  // For admin users, count all libraries
+  $sql = "SELECT COUNT(*) AS library_count FROM libraries";
+} elseif ($userRole === 'member') {
+  // For member users, count only their own libraries
+  $sql = "SELECT COUNT(*) AS library_count FROM libraries WHERE inserted_by = $sessionUserId";
+}
+$result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_assoc($result);
 $libraryCount = $row['library_count'];
 
@@ -28,27 +37,50 @@ if (isset($_SESSION['username']) && isset($_SESSION['showWelcomeMessage']) && $_
     $_SESSION['showWelcomeMessage'] = false;
 }
 
-$result = mysqli_query($conn, "
-SELECT
-libraries.id,
-libraries.library_name,
-libraries.phone,
-libraries.created_at,
-locations.states,
-locations.provinces,
-locations.cities,
-users.username AS inserted_by
-FROM
-libraries
-LEFT JOIN
-locations ON libraries.location_id = locations.location_id
-LEFT JOIN
-users ON libraries.inserted_by = users.id
-ORDER BY
-libraries.id DESC
-LIMIT 5
-");
-
+if ($userRole === 'admin') {
+  // For admin users, retrieve all libraries
+  $sql = "SELECT
+              libraries.id,
+              libraries.library_name,
+              libraries.phone,
+              libraries.created_at,
+              locations.states,
+              locations.provinces,
+              locations.cities,
+              users.username AS inserted_by
+          FROM
+              libraries
+          LEFT JOIN
+              locations ON libraries.location_id = locations.location_id
+          LEFT JOIN
+              users ON libraries.inserted_by = users.id
+          ORDER BY
+              libraries.id DESC
+          LIMIT 5";
+} elseif ($userRole === 'member') {
+  // For member users, retrieve only their own libraries
+  $sql = "SELECT
+              libraries.id,
+              libraries.library_name,
+              libraries.phone,
+              libraries.created_at,
+              locations.states,
+              locations.provinces,
+              locations.cities,
+              users.username AS inserted_by
+          FROM
+              libraries
+          LEFT JOIN
+              locations ON libraries.location_id = locations.location_id
+          LEFT JOIN
+              users ON libraries.inserted_by = users.id
+          WHERE
+              inserted_by = $sessionUserId
+          ORDER BY
+              libraries.id DESC
+          LIMIT 5";
+}
+$result = mysqli_query($conn, $sql);
 $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 mysqli_close($conn);

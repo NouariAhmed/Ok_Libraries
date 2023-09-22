@@ -67,12 +67,22 @@
   
  
   include('../connect.php');
-  
-// Query to get the count of libraries for each library type
-$sql = "SELECT library_types.library_type, COUNT(libraries.id) AS library_count
-        FROM library_types
-        LEFT JOIN libraries ON library_types.id = libraries.library_type_id
-        GROUP BY library_types.library_type";
+  $sessionUserId = $_SESSION['id']; 
+  $userRole = $_SESSION['role'];
+  if ($userRole === 'admin') {
+    // For admin users, count all libraries by library type
+    $sql = "SELECT library_types.library_type, COUNT(libraries.id) AS library_count
+            FROM library_types
+            LEFT JOIN libraries ON library_types.id = libraries.library_type_id
+            GROUP BY library_types.library_type";
+} elseif ($userRole === 'member') {
+    // For member users, count only their own libraries by library type
+    $sql = "SELECT library_types.library_type, COUNT(libraries.id) AS library_count
+            FROM library_types
+            LEFT JOIN libraries ON library_types.id = libraries.library_type_id
+            WHERE libraries.inserted_by = $sessionUserId
+            GROUP BY library_types.library_type";
+}
 
 $result = mysqli_query($conn, $sql);
 
@@ -88,11 +98,21 @@ if ($result) {
     mysqli_free_result($result);
 }
   
-// Query to get the count of libraries inserted by each user
-$sql = "SELECT users.username, COUNT(libraries.id) AS library_count
-        FROM users
-        LEFT JOIN libraries ON users.id = libraries.inserted_by
-        GROUP BY users.username";
+// Construct the SQL query based on the user's role
+if ($userRole === 'admin') {
+  // For admin users, count all libraries inserted by each user
+  $sql = "SELECT users.username, COUNT(libraries.id) AS library_count
+          FROM users
+          LEFT JOIN libraries ON users.id = libraries.inserted_by
+          GROUP BY users.username";
+} elseif ($userRole === 'member') {
+  // For member users, count only their own libraries
+  $sql = "SELECT users.username, COUNT(libraries.id) AS library_count
+          FROM users
+          LEFT JOIN libraries ON users.id = libraries.inserted_by
+          WHERE libraries.inserted_by = $sessionUserId
+          GROUP BY users.username";
+}
 
 $result = mysqli_query($conn, $sql);
 
@@ -108,11 +128,21 @@ if ($result) {
     mysqli_free_result($result);
 }
 
-// Query to get the count of libraries for each library type
-$sql = "SELECT library_percentages.library_percentage, COUNT(libraries.id) AS library_percentage_count
-        FROM library_percentages
-        LEFT JOIN libraries ON library_percentages.id = libraries.library_percentage_id
-        GROUP BY library_percentages.library_percentage";
+// Construct the SQL query based on the user's role
+if ($userRole === 'admin') {
+  // For admin users, count all libraries for each library type
+  $sql = "SELECT library_percentages.library_percentage, COUNT(libraries.id) AS library_percentage_count
+          FROM library_percentages
+          LEFT JOIN libraries ON library_percentages.id = libraries.library_percentage_id
+          GROUP BY library_percentages.library_percentage";
+} elseif ($userRole === 'member') {
+  // For member users, count only their own libraries for each library type
+  $sql = "SELECT library_percentages.library_percentage, COUNT(libraries.id) AS library_percentage_count
+          FROM library_percentages
+          LEFT JOIN libraries ON library_percentages.id = libraries.library_percentage_id
+          WHERE libraries.inserted_by = $sessionUserId
+          GROUP BY library_percentages.library_percentage";
+}
 
 $result = mysqli_query($conn, $sql);
 
