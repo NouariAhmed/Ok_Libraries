@@ -187,6 +187,7 @@ include('header.php');
                     <option value="" disabled selected> -- اختر دور المستخدم -- </option>
                     <option value="Admin">أدمن</option>
                     <option value="member">عضو</option>
+                    <option value="manager">مشرف</option>
                    </select>
                     </div>
                                    

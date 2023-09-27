@@ -40,7 +40,7 @@ $selectedCities = isset($_GET['cities']) ? $_GET['cities'] : 'all';
 $sessionUserId = $_SESSION['id']; 
 $userRole = $_SESSION['role']; 
 
-if ($userRole === 'admin') {
+if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, display all libraries
   $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
           INNER JOIN locations AS loc ON l.location_id = loc.location_id
@@ -108,7 +108,7 @@ $totalFilteredItems = $countRow['total_filtered_items'];
 // Calculate Total Pages
 $totalPages = ceil($totalFilteredItems / $itemsPerPage);
 
-if ($userRole === 'admin') {
+if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, display all libraries
   $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
           FROM libraries AS l
@@ -188,15 +188,15 @@ include('header.php');
             // Unset the session variable to avoid displaying the message on page refresh
             unset($_SESSION['item_not_found']);
         }
-        ?>
+        if ($userRole !== 'manager') { ?>
+          <h4 class="mb-3">إضافة مكتبة</h4>
+          <div class="input-group input-group-outline my-3">
+              <a href="add_library.php" class="btn btn-secondary">إضـافة</a>
+          </div>
+        <?php } ?>
        
-       <h4 class="mb-3">فلترة المكتبات</h4>
-        <div class="input-group input-group-outline my-3">
-            <a href="add_library.php" class="btn btn-secondary">إضـافة</a>
-        </div>
-
         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
-            <h5 class="mb-3">فلترة</h5>
+            <h5 class="mb-3">فلترة المكتبات</h5>
            <div class="input-group input-group-outline my-3">
                 <select class="form-control" id="libraryType" name="libraryType">
                     <option value="all" <?php echo $selectedLibraryType === 'all' ? 'selected' : ''; ?>>-- جميع أنواع المكتبات --</option>
@@ -398,11 +398,13 @@ include('header.php');
                         <?php if (!empty($item["userfile"])): ?>
                                     <a href="<?php echo htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
                                     <i class="fas fa-file-pdf align-middle" style="font-size: 18px;"></i></a>
-                        <?php endif; ?>
+                        <?php endif; 
+                        if ($userRole !== 'manager') { ?>
                         <a href="update_library.php?id=<?php echo htmlspecialchars($item["id"]); ?>&states=<?php echo htmlspecialchars($item["states"]); ?>&province=<?php echo htmlspecialchars($item["provinces"]); ?>&city=<?php echo htmlspecialchars($item["cities"]); ?>" class="btn badge-sm bg-gradient-primary">
                         <i class="material-icons-round align-middle" style="font-size: 18px;">edit</i>
                         </a>
                         <a href="delete_library.php?id=<?php echo htmlspecialchars($item["id"]);?>" class="btn badge-sm bg-gradient-danger"> <i class="material-icons-round align-middle" style="font-size: 18px;">delete</i></a>
+                        <?php } ?>
                       </td>
                     </tr>
                     <?php

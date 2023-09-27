@@ -4,7 +4,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$allowedRoles = ["admin", "member"];
+$allowedRoles = ["admin", "member", "manager"];
 
 if (!in_array($_SESSION['role'], $allowedRoles)) {
     header("Location: ../login.php");

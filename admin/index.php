@@ -6,7 +6,7 @@ include('../connect.php');
 
 $sessionUserId = $_SESSION['id']; 
 $userRole = $_SESSION['role'];
-if ($userRole === 'admin') {
+if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, count all libraries
   $sql = "SELECT COUNT(*) AS library_count FROM libraries";
 } elseif ($userRole === 'member') {
@@ -37,7 +37,7 @@ if (isset($_SESSION['username']) && isset($_SESSION['showWelcomeMessage']) && $_
     $_SESSION['showWelcomeMessage'] = false;
 }
 
-if ($userRole === 'admin') {
+if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, retrieve all libraries
   $sql = "SELECT
               libraries.id,

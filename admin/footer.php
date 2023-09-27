@@ -69,7 +69,7 @@
   include('../connect.php');
   $sessionUserId = $_SESSION['id']; 
   $userRole = $_SESSION['role'];
-  if ($userRole === 'admin') {
+  if ($userRole === 'admin' || $userRole === 'manager') {
     // For admin users, count all libraries by library type
     $sql = "SELECT library_types.library_type, COUNT(libraries.id) AS library_count
             FROM library_types
@@ -99,7 +99,7 @@ if ($result) {
 }
   
 // Construct the SQL query based on the user's role
-if ($userRole === 'admin') {
+if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, count libraries by state
   $sql = "SELECT locations.states, COUNT(libraries.id) AS library_count
           FROM locations
@@ -130,7 +130,7 @@ if ($result) {
 
 
 // Construct the SQL query based on the user's role
-if ($userRole === 'admin') {
+if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, count all libraries for each library type
   $sql = "SELECT library_percentages.library_percentage, COUNT(libraries.id) AS library_percentage_count
           FROM library_percentages
