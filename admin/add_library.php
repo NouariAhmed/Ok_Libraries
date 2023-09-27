@@ -288,19 +288,18 @@ include('header.php');
     }, 250);
 </script>
 
-        <?php 
+<?php 
 $sessionUserId = $_SESSION['id']; 
 $userRole = $_SESSION['role'];
-$register_success_msg = isset($_SESSION['register_success_msg']) ? $_SESSION['register_success_msg'] : "";
 
 // Check if the user has reached 100 libraries
-$userLibraryCount = 100; // Change this to the actual count you want to check
+$userLibraryCount = 100; 
 if ($userRole === 'member') {
     $sql = "SELECT COUNT(*) AS library_count FROM libraries WHERE inserted_by = $sessionUserId";
     $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
         $libraryCount = $row['library_count'];
-        if ($libraryCount == $userLibraryCount) {
+        if ($libraryCount == $userLibraryCount || $libraryCount % 100 == 0) {
             ?>
                 <div class="modal fade" id="congratulationModal" tabindex="-1" aria-labelledby="congratulationModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
@@ -329,7 +328,6 @@ if ($userRole === 'member') {
         }
 }
  unset($_SESSION['register_success_msg']); }  ?>
-
 
         <form role="form" action="" method="post" enctype="multipart/form-data">
         <h4 class="mb-3">إضافة مكتبة</h4>

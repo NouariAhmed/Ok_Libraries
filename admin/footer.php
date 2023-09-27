@@ -100,33 +100,34 @@ if ($result) {
   
 // Construct the SQL query based on the user's role
 if ($userRole === 'admin') {
-  // For admin users, count all libraries inserted by each user
-  $sql = "SELECT users.username, COUNT(libraries.id) AS library_count
-          FROM users
-          LEFT JOIN libraries ON users.id = libraries.inserted_by
-          GROUP BY users.username";
+  // For admin users, count libraries by state
+  $sql = "SELECT locations.states, COUNT(libraries.id) AS library_count
+          FROM locations
+          LEFT JOIN libraries ON locations.location_id = libraries.location_id
+          GROUP BY locations.states";
 } elseif ($userRole === 'member') {
-  // For member users, count only their own libraries
-  $sql = "SELECT users.username, COUNT(libraries.id) AS library_count
-          FROM users
-          LEFT JOIN libraries ON users.id = libraries.inserted_by
+  // For member users, count their own libraries by state
+  $sql = "SELECT locations.states, COUNT(libraries.id) AS library_count
+          FROM locations
+          LEFT JOIN libraries ON locations.location_id = libraries.location_id
           WHERE libraries.inserted_by = $sessionUserId
-          GROUP BY users.username";
+          GROUP BY locations.states";
 }
 
 $result = mysqli_query($conn, $sql);
 
-$userLabels = [];
-$libraryCountsByUser = [];
+$stateLabels = [];
+$libraryCountsByState = [];
 
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
-        $userLabels[] = $row['username'];
-        $libraryCountsByUser[] = $row['library_count'];
+        $stateLabels[] = $row['states'];
+        $libraryCountsByState[] = $row['library_count'];
     }
 
     mysqli_free_result($result);
 }
+
 
 // Construct the SQL query based on the user's role
 if ($userRole === 'admin') {
@@ -272,11 +273,11 @@ if ($result) {
     new Chart(ctx2, {
   type: "bar", 
   data: {
-    labels: <?php echo json_encode($userLabels); ?>,
+    labels: <?php echo json_encode($stateLabels); ?>,
     datasets: [{
       label: "عدد المكتبات",
       backgroundColor: "rgba(255, 255, 255, .8)",
-      data: <?php echo json_encode($libraryCountsByUser); ?>,
+      data: <?php echo json_encode($libraryCountsByState); ?>,
       borderWidth: 0,
       borderRadius: 4,
       maxBarThickness: 50

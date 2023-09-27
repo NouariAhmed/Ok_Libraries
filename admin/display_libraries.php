@@ -114,7 +114,7 @@ if ($userRole === 'admin') {
           FROM libraries AS l
           INNER JOIN locations AS loc ON l.location_id = loc.location_id
           LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id";
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id WHERE 1 = 1";
 } elseif ($userRole === 'member') {
   // For member users, display only their own libraries
   $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
