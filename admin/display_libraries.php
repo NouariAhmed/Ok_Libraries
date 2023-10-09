@@ -34,8 +34,8 @@ $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
 $selectedLibraryType = isset($_GET['libraryType']) ? $_GET['libraryType'] : 'all';
 $selectedLibraryPercentage = isset($_GET['libraryPercentage']) ? $_GET['libraryPercentage'] : 'all'; 
 $selectedStates = isset($_GET['states']) ? $_GET['states'] : 'all';
-$selectedProvinces = isset($_GET['provinces']) ? $_GET['provinces'] : 'all';
-$selectedCities = isset($_GET['cities']) ? $_GET['cities'] : 'all';
+$selectedProvinces = isset($_GET['province']) ? $_GET['province'] : 'all';
+$selectedCities = isset($_GET['city']) ? $_GET['city'] : 'all';
 
 $sessionUserId = $_SESSION['id']; 
 $userRole = $_SESSION['role']; 
