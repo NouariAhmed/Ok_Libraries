@@ -51,6 +51,14 @@
             <span class="nav-link-text me-1">المكتبات</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="add_library.php">
+            <div class="text-white text-center ms-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons-round opacity-10">add</i>
+            </div>
+            <span class="nav-link-text me-1">إضافة مكتبة</span>
+          </a>
+        </li>
         <?php
         $currentDate = date("Y-m-d");
 
