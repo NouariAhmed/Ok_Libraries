@@ -36,6 +36,12 @@ $selectedLibraryPercentage = isset($_GET['libraryPercentage']) ? $_GET['libraryP
 $selectedStates = isset($_GET['states']) ? $_GET['states'] : 'all';
 $selectedProvinces = isset($_GET['province']) ? $_GET['province'] : 'all';
 $selectedCities = isset($_GET['city']) ? $_GET['city'] : 'all';
+$selectedHasNotes = isset($_GET['hasNotes']) ? $_GET['hasNotes'] : 'all';
+$selectedSocialMedia = isset($_GET['socialMedia']) ? $_GET['socialMedia'] : 'all';
+$selectedLibraryDetails = isset($_GET['libraryDetails']) ? $_GET['libraryDetails'] : 'all';
+$selectedInsertedBy = isset($_GET['insertedBy']) ? $_GET['insertedBy'] : 'all';
+$startDate = isset($_GET['startDate']) ? $_GET['startDate'] : null;
+$endDate = isset($_GET['endDate']) ? $_GET['endDate'] : null;
 
 $sessionUserId = $_SESSION['id']; 
 $userRole = $_SESSION['role']; 
@@ -88,7 +94,65 @@ if ($selectedCities !== 'all') {
     $bindValues[] = &$selectedCities;
 }
 
+// notes Filter
+if ($selectedHasNotes !== 'all') {
+  if ($selectedHasNotes === 'yes') {
+      $sql .= " AND l.notes IS NOT NULL AND l.notes <> ''";
+  } else {
+      $sql .= " AND (l.notes IS NULL OR l.notes = '')";
+  }
+}
 
+// social media Filter
+if ($selectedSocialMedia !== 'all') {
+  if ($selectedSocialMedia === 'fb') {
+      $sql .= " AND l.fbLink IS NOT NULL AND l.fbLink <> ''";
+  } elseif ($selectedSocialMedia === 'insta') {
+      $sql .= " AND l.instaLink IS NOT NULL AND l.instaLink <> ''";
+  } elseif ($selectedSocialMedia === 'map') {
+      $sql .= " AND l.mapAddress IS NOT NULL AND l.mapAddress <> ''";
+  } elseif ($selectedSocialMedia === 'website') {
+      $sql .= " AND l.websiteLink IS NOT NULL AND l.websiteLink <> ''";
+  }
+}
+
+// details Filter
+if ($selectedLibraryDetails !== 'all') {
+  if ($selectedLibraryDetails === 'libraryPoster') {
+      $sql .= " AND l.firstCheckbox = 'مكتبة ووراقة'";
+  } elseif ($selectedLibraryDetails === 'online') {
+    $sql .= " AND l.secondCheckbox = 'يعمل أونلاين'";
+  } elseif ($selectedLibraryDetails === 'publishingHouse') {
+    $sql .= " AND l.thirdCheckbox = 'دار نشر'";
+  } elseif ($selectedLibraryDetails === 'infoMateriel') {
+    $sql .= " AND l.fourthCheckbox = 'لديه عتاد اعلام آلي'";
+  } elseif ($selectedLibraryDetails === 'printService') {
+      $sql .= " AND l.fifthCheckbox = 'طباعة'";
+  }  
+}
+
+// users Filter
+if ($selectedInsertedBy !== 'all') {
+  $sql .= " AND l.inserted_by = ?";
+  $bindTypes .= 'i'; // Assuming inserted_by is an integer
+  $bindValues[] = &$selectedInsertedBy;
+}
+
+// start/end Date Filter
+if ($startDate && $endDate) {
+  $sql .= " AND l.created_at BETWEEN ? AND ?";
+  $bindTypes .= 'ss';
+  $bindValues[] = &$startDate;
+  $bindValues[] = &$endDate; 
+} elseif ($startDate) {
+  $sql .= " AND l.created_at >= ?";
+  $bindTypes .= 's';
+  $bindValues[] = &$startDate;
+} elseif ($endDate) {
+  $sql .= " AND l.created_at <= ?";
+  $bindTypes .= 's';
+  $bindValues[] = &$endDate;
+}
 
 $countStmt = mysqli_prepare($conn, $sql);
 
@@ -145,6 +209,56 @@ if ($selectedCities !== 'all') {
     $sql .= " AND loc.cities = ?";
 }
 
+// notes Filter
+if ($selectedHasNotes !== 'all') {
+  if ($selectedHasNotes === 'yes') {
+      $sql .= " AND l.notes IS NOT NULL AND l.notes <> ''";
+  } else {
+      $sql .= " AND (l.notes IS NULL OR l.notes = '')";
+  }
+}
+
+// social media Filter
+if ($selectedSocialMedia !== 'all') {
+  if ($selectedSocialMedia === 'fb') {
+      $sql .= " AND l.fbLink IS NOT NULL AND l.fbLink <> ''";
+  } elseif ($selectedSocialMedia === 'insta') {
+      $sql .= " AND l.instaLink IS NOT NULL AND l.instaLink <> ''";
+  } elseif ($selectedSocialMedia === 'map') {
+      $sql .= " AND l.mapAddress IS NOT NULL AND l.mapAddress <> ''";
+  } elseif ($selectedSocialMedia === 'website') {
+      $sql .= " AND l.websiteLink IS NOT NULL AND l.websiteLink <> ''";
+  }
+}
+
+// details Filter
+if ($selectedLibraryDetails !== 'all') {
+  if ($selectedLibraryDetails === 'libraryPoster') {
+      $sql .= " AND l.firstCheckbox = 'مكتبة ووراقة'";
+  } elseif ($selectedLibraryDetails === 'online') {
+      $sql .= " AND l.secondCheckbox = 'يعمل أونلاين'";
+  } elseif ($selectedLibraryDetails === 'publishingHouse') {
+      $sql .= " AND l.thirdCheckbox = 'دار نشر'";
+  } elseif ($selectedLibraryDetails === 'infoMateriel') {
+      $sql .= " AND l.fourthCheckbox = 'لديه عتاد اعلام آلي'";
+  } elseif ($selectedLibraryDetails === 'printService') {
+      $sql .= " AND l.fifthCheckbox = 'طباعة'";
+  }  
+}
+
+// users Filter
+if ($selectedInsertedBy !== 'all') {
+    $sql .= " AND l.inserted_by = ?";
+}
+
+// start/end Date Filter
+if ($startDate && $endDate) {
+    $sql .= " AND l.created_at BETWEEN ? AND ?";
+} elseif ($startDate) {
+    $sql .= " AND l.created_at >= ?";
+} elseif ($endDate) {
+    $sql .= " AND l.created_at <= ?";
+}
 
 $sql .= " ORDER BY l.id DESC";
 $sql .= " LIMIT $startIndex, $itemsPerPage";
@@ -214,6 +328,7 @@ include('header.php');
                     ?>
                 </select>
            </div>
+
            <div class="input-group input-group-outline my-3">
                 <select class="form-control" id="libraryPercentage" name="libraryPercentage">
                     <option value="all" <?php echo $selectedLibraryPercentage === 'all' ? 'selected' : ''; ?>>-- جميع أنواع العملاء --</option>
@@ -246,17 +361,70 @@ include('header.php');
                     ?>
                 </select>
             </div>
+            
             <div class="input-group input-group-outline my-3">
-    <select class="form-control" name="province" id="province" <?php echo $selectedStates === 'all' ? 'disabled' : ''; ?>>
-        <option value="all">-- جميع الدوائر --</option>
+              <select class="form-control" name="province" id="province" <?php echo $selectedStates === 'all' ? 'disabled' : ''; ?>>
+                  <option value="all">-- جميع الدوائر --</option>
+              </select>
+            </div>
+
+          <div class="input-group input-group-outline my-3">
+              <select class="form-control" name="city" id="city" <?php echo ($selectedStates === 'all' || $selectedProvinces === 'all') ? 'disabled' : ''; ?>>
+                  <option value="all">-- جميع البلديات --</option>
+              </select>
+          </div>
+
+          <div class="input-group input-group-outline my-3">
+            <select class="form-control" id="hasNotes" name="hasNotes">
+                <option value="all" <?php echo $selectedHasNotes === 'all' ? 'selected' : ''; ?>>-- فلترة الملاحظات --</option>
+                <option value="yes" <?php echo $selectedHasNotes === 'yes' ? 'selected' : ''; ?>>يملك ملاحظات</option>
+                <option value="no" <?php echo $selectedHasNotes === 'no' ? 'selected' : ''; ?>>لا يملك ملاحظات</option>
+            </select>
+          </div>
+
+          <div class="input-group input-group-outline my-3">
+    <select class="form-control" id="socialMedia" name="socialMedia">
+        <option value="all" <?php echo $selectedSocialMedia === 'all' ? 'selected' : ''; ?>>-- جميع وسائل التواصل --</option>
+        <option value="fb" <?php echo $selectedSocialMedia === 'fb' ? 'selected' : ''; ?>>فيسبوك</option>
+        <option value="insta" <?php echo $selectedSocialMedia === 'insta' ? 'selected' : ''; ?>>إنستغرام</option>
+        <option value="website" <?php echo $selectedSocialMedia === 'website' ? 'selected' : ''; ?>>موقع</option>
+        <option value="map" <?php echo $selectedSocialMedia === 'map' ? 'selected' : ''; ?>>خرائط قوقل</option>
     </select>
 </div>
 
 <div class="input-group input-group-outline my-3">
-    <select class="form-control" name="city" id="city" <?php echo ($selectedStates === 'all' || $selectedProvinces === 'all') ? 'disabled' : ''; ?>>
-        <option value="all">-- جميع البلديات --</option>
+    <select class="form-control" id="libraryDetails" name="libraryDetails">
+        <option value="all" <?php echo $selectedLibraryDetails === 'all' ? 'selected' : ''; ?>>-- جميع التفاصيل --</option>
+        <option value="libraryPoster" <?php echo $selectedLibraryDetails === 'libraryPoster' ? 'selected' : ''; ?>>مكتبة ووراقة</option>
+        <option value="printService" <?php echo $selectedLibraryDetails === 'printService' ? 'selected' : ''; ?>>خدمة الطباعة</option>
+        <option value="online" <?php echo $selectedLibraryDetails === 'online' ? 'selected' : ''; ?>>يعمل أونلاين</option>
+        <option value="publishingHouse" <?php echo $selectedLibraryDetails === 'publishingHouse' ? 'selected' : ''; ?>>دار نشر</option>
+        <option value="infoMateriel" <?php echo $selectedLibraryDetails === 'infoMateriel' ? 'selected' : ''; ?>>يملك عتاد الإعلام آلي</option>
     </select>
 </div>
+
+<div class="input-group input-group-outline my-3">
+    <select class="form-control" id="insertedBy" name="insertedBy">
+        <option value="all" <?php echo $selectedInsertedBy === 'all' ? 'selected' : ''; ?>>-- جميع المستخدمين --</option>
+        <?php
+        foreach ($usernames as $id => $username) {
+            $selected = $selectedInsertedBy == $id ? 'selected' : '';
+            echo "<option value=\"$id\" $selected>$username</option>";
+        }
+        ?>
+    </select>
+</div>
+
+<div class="input-group input-group-outline my-3">
+    <label for="startDate">Start Date: </label>
+    <input type="date" class="form-control" id="startDate" name="startDate" value="<?php echo isset($startDate) ? $startDate : ''; ?>">
+</div>
+<div class="input-group input-group-outline my-3">
+    <label for="endDate">End Date: </label>
+    <input type="date" class="form-control" id="endDate" name="endDate" value="<?php echo isset($endDate) ? $endDate : ''; ?>">
+</div>
+
+
           <button type="submit"  class="btn bg-gradient-primary" >فلترة</button> 
           <button type="button" class="btn btn-secondary" id="clearFilter">مسح الفلتر</button>
 
@@ -427,6 +595,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const stateDropdown = document.getElementById("state");
     const provinceDropdown = document.getElementById("province");
     const cityDropdown = document.getElementById("city");
+    const notesDropdown = document.getElementById("hasNotes");
+    const socialMediaDropdown = document.getElementById("socialMedia");
+    const libraryDetailsDropdown = document.getElementById("libraryDetails");
+    const insertedByDropdown = document.getElementById("insertedBy");
+    const startDateDropdown = document.getElementById("startDate");
+    const endDateDropdown = document.getElementById("endDate");
 
     stateDropdown.addEventListener("change", function() {
         const selectedState = stateDropdown.value;
@@ -479,6 +653,12 @@ document.addEventListener("DOMContentLoaded", function() {
         stateDropdown.value = "all";
         provinceDropdown.value = "all";
         cityDropdown.value = "all";
+        notesDropdown.value = "all";
+        socialMediaDropdown.value = "all";
+        libraryDetailsDropdown.value = "all";
+        insertedByDropdown.value = "all";
+        startDateDropdown.value = "all";
+        endDateDropdown.value = "all";
         provinceDropdown.disabled = true;
         cityDropdown.disabled = true;
     });
@@ -488,6 +668,4 @@ document.addEventListener("DOMContentLoaded", function() {
 <?php
  mysqli_close($conn);
 include('footer.php');
-?>
-
-          
+?>         
