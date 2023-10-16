@@ -87,6 +87,14 @@
             <span class="nav-link-text me-1">المستخدمون</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link " href="display_lib_ext.php">
+            <div class="text-white text-center ms-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons-round opacity-10">store</i>
+            </div>
+            <span class="nav-link-text me-1">مكتبات للإنضمام</span>
+          </a>
+        </li>
         <?php } ?>
     <div class="sidenav-footer position-absolute w-100 bottom-0 ">
       <div class="mx-3">

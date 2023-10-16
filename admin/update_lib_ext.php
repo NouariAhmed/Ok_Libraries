@@ -5,7 +5,7 @@ include('secure.php');
 include('header.php');
 include('../connect.php');
 // Initialize variables
-$library_name = $library_last_name = $library_type_id = $library_percentage_id = $address = $phone = $second_phone = $student_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
+$library_name = $library_last_name = $library_type_id = $address = $phone = $second_phone = $student_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
 $library_name_err = $library_last_name_err = $address_err = $phone_err = $second_phone_err = $student_phone_err = $email_err = $state_err = $province_err = $city_err = $register_err = $file_err= "";
 
 // Fetch library types from the database
@@ -13,27 +13,22 @@ $sql_library_types = "SELECT id, library_type FROM library_types";
 $result_library_types = mysqli_query($conn, $sql_library_types);
 $libraryTypes = mysqli_fetch_all($result_library_types, MYSQLI_ASSOC);
 
-// Fetch library percentages from the database
-$sql_library_percentages = "SELECT id, library_percentage FROM library_percentages";
-$result_library_percentages = mysqli_query($conn, $sql_library_percentages);
-$libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC);
-
 ?>
 <div class="container-fluid py-4">
     <?php
     if (isset($_SESSION['create_update_success']) && $_SESSION['create_update_success'] === true) {
         // Unset the session variable to avoid displaying the message on page refresh
         unset($_SESSION['create_update_success']);
-        // Redirect to the display_libraries page with a success message
-        header("Location: display_libraries.php?create_update_success=1");
+        // Redirect to the display_lib_ext page with a success message
+        header("Location: display_lib_ext.php?create_update_success=1");
         exit;
     }
 
     if (isset($_SESSION['item_not_found']) && $_SESSION['item_not_found'] === true) {
         // Unset the session variable to avoid displaying the message on page refresh
         unset($_SESSION['item_not_found']);
-        // Redirect to the display_libraries page with a success message
-        header("Location: display_libraries.php?item_not_found=1");
+        // Redirect to the display_lib_ext page with a success message
+        header("Location: display_lib_ext.php?item_not_found=1");
         exit;
     }
 
@@ -44,7 +39,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
     $states = isset($_GET['states']) ? $_GET['states'] : '';
 
     if (!empty($id)) {
-        $stmt = mysqli_prepare($conn, "SELECT * FROM libraries WHERE id = ?");
+        $stmt = mysqli_prepare($conn, "SELECT * FROM ext_libraries WHERE id = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -55,7 +50,6 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $library_name = htmlspecialchars($item["library_name"]);          
             $library_last_name = htmlspecialchars($item["library_last_name"]);
             $library_type_id = htmlspecialchars($item["library_type_id"]);
-            $library_percentage_id = htmlspecialchars($item["library_percentage_id"]);
             $address = htmlspecialchars($item["address"]);
             $phone = htmlspecialchars($item["phone"]);
             $second_phone = htmlspecialchars($item["second_phone"]);
@@ -91,8 +85,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             $_SESSION['item_not_found'] = true;
             // Close the statement result
             mysqli_stmt_close($stmt);
-            // Redirect to the display_libraries page after item not found
-            header("Location: display_libraries.php");
+            // Redirect to the display_lib_ext page after item not found
+            header("Location: display_lib_ext.php");
             exit;
         }
 
@@ -106,7 +100,6 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
            $library_name = trim($_POST["library_name"]);
            $library_last_name = trim($_POST["library_last_name"]);
            $library_type_id = trim($_POST["library_type_id"]);
-           $library_percentage_id = trim($_POST["library_percentage_id"]);
            $address = trim($_POST["address"]);
            $phone = trim($_POST["phone"]);
            $second_phone = trim($_POST["second_phone"]);
@@ -171,7 +164,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                         $phone_err = "رقم هاتف غير صالح.";
                     } else {
                         // Check if phone number already exists in the database (in phone, second_phone, or student_phone column)
-                        $existingPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
+                        $existingPhoneQuery = "SELECT id, library_name FROM ext_libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
                         $stmt_existingPhone = mysqli_prepare($conn, $existingPhoneQuery);
                         mysqli_stmt_bind_param($stmt_existingPhone, "sssi", $phone, $phone, $phone, $id);
                         mysqli_stmt_execute($stmt_existingPhone);
@@ -190,7 +183,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                     } else {
                         // Check if secondary phone number already exists in the database (in phone, second_phone, or student_phone column)
                         if (!empty($second_phone)) {
-                            $existingSecondPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
+                            $existingSecondPhoneQuery = "SELECT id, library_name FROM ext_libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
                             $stmt_existingSecondPhone = mysqli_prepare($conn, $existingSecondPhoneQuery);
                             mysqli_stmt_bind_param($stmt_existingSecondPhone, "sssi", $second_phone, $second_phone, $second_phone, $id);
                             mysqli_stmt_execute($stmt_existingSecondPhone);
@@ -210,7 +203,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                     } else {
                         // Check if student phone number already exists in the database (in phone, second_phone, or student_phone column)
                         if (!empty($student_phone)) {
-                            $existingStudentPhoneQuery = "SELECT id, library_name FROM libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
+                            $existingStudentPhoneQuery = "SELECT id, library_name FROM ext_libraries WHERE (phone = ? OR second_phone = ? OR student_phone = ?) AND id != ?";
                             $stmt_existingStudentPhone = mysqli_prepare($conn, $existingStudentPhoneQuery);
                             mysqli_stmt_bind_param($stmt_existingStudentPhone, "sssi", $student_phone, $student_phone, $student_phone, $id);
                             mysqli_stmt_execute($stmt_existingStudentPhone);
@@ -260,41 +253,41 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
             mysqli_stmt_fetch($stmt_location);
             mysqli_stmt_close($stmt_location);
 
-            $uploadDirectory = "commercial_photos/"; 
-            // Create the directory if it does not exist
-            if (!is_dir($uploadDirectory)) {
-                mkdir($uploadDirectory, 0755, true);
-            }
-            $uploadedFile = '';
-            $fileType = "";
+            $uploadDirectory = "../sila_commercial_photos/";
+
+            $uploadedFile = $updateFileName =  $fileType = '';
+
             if (!empty($_FILES['uploadedFile']['name'])) {
             // Generate a unique filename
             $uniqueFileName = uniqid() . "_" . basename($_FILES['uploadedFile']['name']);
             $uploadedFile = $uploadDirectory . $uniqueFileName;
+            // this is to make the new file to same path with files
+            $newUpdatedFileName = "sila_commercial_photos/" . $uniqueFileName;
             // Get the file type from the uploaded file
             $fileType = $_FILES['uploadedFile']['type'];
             // Move the uploaded file to the destination directory
             move_uploaded_file($_FILES['uploadedFile']['tmp_name'], $uploadedFile);
+            
             }
      
             // Update the author data 
             if (!empty($uploadedFile)) {
                 // If a new file is uploaded, update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE ext_libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssssiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $newUpdatedFileName, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $id);
             } else {
                 // If no new file is uploaded, don't update userfile and filetype
-                $sql_update_library = "UPDATE libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ?, library_percentage_id = ? WHERE id = ?";
+                $sql_update_library = "UPDATE ext_libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssiiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $library_percentage_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $id);
             }
 
                 mysqli_stmt_execute($stmt_update_library);
 
-                 // Redirect to the display_libraries page after successful update
+                 // Redirect to the display_lib_ext page after successful update
                  $_SESSION['create_update_success'] = true;
-                 header("Location: display_libraries.php");
+                 header("Location: display_lib_ext.php");
                  exit;
 
         }
@@ -307,7 +300,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
               <div class="border rounded p-4 shadow">
                  <h6 class="border-bottom pb-2 mb-3">تحديث معلومات المكتبة</h6>
                  <div class="row mb-3">
-                    <div class="col-md-6 mt-4">
+                    <div class="col-md-12 mt-4">
                         <div class="input-group input-group-outline mt-2">
                             <select name="library_type_id" id="library_type" class="form-control" required>
                                 <option value="" disabled> -- اختر نوع المكتبة  * -- </option>
@@ -321,21 +314,8 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                         </div>
 
                     </div>
-                    <div class="col-md-6 mt-4">
-                        <div class="input-group input-group-outline mt-2">
-                                <select name="library_percentage_id" id="library_percentage" class="form-control" required>
-                                    <option value="" disabled> -- اختر نوع العميل  * -- </option>
-                                    <?php
-                                    foreach ($libraryPercentages as $percentage) {
-                                        $selected = ($percentage['id'] == $library_percentage_id) ? 'selected' : ''; // Check if this option is selected
-                                        echo '<option value="' . $percentage['id'] . '" ' . $selected . '>' . $percentage['library_percentage'] . '</option>';
-                                    }
-                                    ?>
-                                </select>
-                        </div>
-                    </div>
-
                  </div>
+
                 <div class="row">
                     <div class="form-group col-md-6">
                         <label class="form-label">إسم المكتبة  * :</label>
@@ -491,7 +471,7 @@ $libraryPercentages = mysqli_fetch_all($result_library_percentages, MYSQLI_ASSOC
                             </div>
           </form>          
     <hr>
-    <a href="display_libraries.php" class="btn btn-secondary">العودة إلى قائمة المؤلفين</a>
+    <a href="display_lib_ext.php" class="btn btn-secondary">العودة إلى قائمة المؤلفين</a>
 </div>
 <script>
     const stateDropdown = document.getElementById('state');

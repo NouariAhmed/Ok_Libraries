@@ -2,18 +2,11 @@
 session_start();
 include('secure.php');
 include('../connect.php');
-$table = "libraries";
+$table = "ext_libraries";
 
 $itemsPerPage = 10; // Number of items per page
 
 $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? intval($_GET['page']) : 1;
-// Get username           
-$usernames = [];
-$sql_users = "SELECT id, username FROM users";
-$result_users = mysqli_query($conn, $sql_users);
-while ($user = mysqli_fetch_assoc($result_users)) {
-    $usernames[$user['id']] = $user['username'];
-}
 
 // Get the total number of items in the database
 $sql = "SELECT COUNT(*) AS total_items FROM $table";
@@ -32,14 +25,12 @@ $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
  
 // Get the selected library type, states, provinces, and cities from the query parameters
 $selectedLibraryType = isset($_GET['libraryType']) ? $_GET['libraryType'] : 'all';
-$selectedLibraryPercentage = isset($_GET['libraryPercentage']) ? $_GET['libraryPercentage'] : 'all'; 
 $selectedStates = isset($_GET['states']) ? $_GET['states'] : 'all';
 $selectedProvinces = isset($_GET['province']) ? $_GET['province'] : 'all';
 $selectedCities = isset($_GET['city']) ? $_GET['city'] : 'all';
 $selectedHasNotes = isset($_GET['hasNotes']) ? $_GET['hasNotes'] : 'all';
 $selectedSocialMedia = isset($_GET['socialMedia']) ? $_GET['socialMedia'] : 'all';
 $selectedLibraryDetails = isset($_GET['libraryDetails']) ? $_GET['libraryDetails'] : 'all';
-$selectedInsertedBy = isset($_GET['insertedBy']) ? $_GET['insertedBy'] : 'all';
 $startDate = isset($_GET['startDate']) ? $_GET['startDate'] : null;
 $endDate = isset($_GET['endDate']) ? $_GET['endDate'] : null;
 
@@ -51,14 +42,7 @@ if ($userRole === 'admin' || $userRole === 'manager') {
   $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
           INNER JOIN locations AS loc ON l.location_id = loc.location_id
           LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id WHERE 1 = 1";
-} elseif ($userRole === 'member') {
-  // For member users, display only their own libraries
-  $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
-          INNER JOIN locations AS loc ON l.location_id = loc.location_id
-          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
-          WHERE l.inserted_by = $sessionUserId";
+          WHERE 1 = 1";
 }
 
 $bindTypes = ''; // String to store parameter types
@@ -68,12 +52,6 @@ if ($selectedLibraryType !== 'all') {
     $sql .= " AND lt.library_type = ?";
     $bindTypes .= 's'; // Assuming library_type is a string
     $bindValues[] = &$selectedLibraryType;
-}
-
-if ($selectedLibraryPercentage !== 'all') { // Add this condition
-    $sql .= " AND lp.library_percentage = ?";
-    $bindTypes .= 's'; // Assuming library_percentage is a string
-    $bindValues[] = &$selectedLibraryPercentage;
 }
 
 if ($selectedStates !== 'all') {
@@ -131,13 +109,6 @@ if ($selectedLibraryDetails !== 'all') {
   }  
 }
 
-// users Filter
-if ($selectedInsertedBy !== 'all') {
-  $sql .= " AND l.inserted_by = ?";
-  $bindTypes .= 'i'; // Assuming inserted_by is an integer
-  $bindValues[] = &$selectedInsertedBy;
-}
-
 // start/end Date Filter
 if ($startDate && $endDate) {
   $sql .= " AND l.created_at BETWEEN ? AND ?";
@@ -174,27 +145,15 @@ $totalPages = ceil($totalFilteredItems / $itemsPerPage);
 
 if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, display all libraries
-  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
-          FROM libraries AS l
+  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type
+          FROM $table AS l
           INNER JOIN locations AS loc ON l.location_id = loc.location_id
           LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id WHERE 1 = 1";
-} elseif ($userRole === 'member') {
-  // For member users, display only their own libraries
-  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
-          FROM libraries AS l
-          INNER JOIN locations AS loc ON l.location_id = loc.location_id
-          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
-          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
-          WHERE l.inserted_by = $sessionUserId";
-}
+          WHERE 1 = 1";
+} 
         
 if ($selectedLibraryType !== 'all') {
     $sql .= " AND lt.library_type = ?";
-}
-
-if ($selectedLibraryPercentage !== 'all') {
-    $sql .= " AND lp.library_percentage = ?";
 }
 
 if ($selectedStates !== 'all') {
@@ -244,11 +203,6 @@ if ($selectedLibraryDetails !== 'all') {
   } elseif ($selectedLibraryDetails === 'printService') {
       $sql .= " AND l.fifthCheckbox = 'طباعة'";
   }  
-}
-
-// users Filter
-if ($selectedInsertedBy !== 'all') {
-    $sql .= " AND l.inserted_by = ?";
 }
 
 // start/end Date Filter
@@ -305,14 +259,14 @@ include('header.php');
         if ($userRole !== 'manager') { ?>
           <h4 class="mb-3">إضافة مكتبة</h4>
           <div class="input-group input-group-outline my-3">
-              <a href="add_library.php" class="btn btn-secondary">إضـافة</a>
+              <a href="../add_lib_ext.php" class="btn btn-secondary">إضـافة</a>
           </div>
         <?php } ?>
        
         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
             <h5 class="mb-3">فلترة المكتبات</h5>
             <div class="row">
-              <div class="col-md-4">
+              <div class="col-md-12">
                   <div class="input-group input-group-outline m-2">
                         <select class="form-control" id="libraryType" name="libraryType">
                             <option value="all" <?php echo $selectedLibraryType === 'all' ? 'selected' : ''; ?>>-- جميع أنواع المكتبات --</option>
@@ -330,93 +284,62 @@ include('header.php');
                             ?>
                         </select>
                   </div>
-              </div>
-              <div class="col-md-4">
+               </div>
+            </div>
+
+            <div class="row">
+               <div class="col-md-4">
                   <div class="input-group input-group-outline m-2">
-                        <select class="form-control" id="libraryPercentage" name="libraryPercentage">
-                            <option value="all" <?php echo $selectedLibraryPercentage === 'all' ? 'selected' : ''; ?>>-- جميع أنواع العملاء --</option>
-                            <?php
-                            $libraryPercentagesQuery = "SELECT * FROM library_percentages";
-                            $libraryPercentagesResult = mysqli_query($conn, $libraryPercentagesQuery);
-
-                            while ($libraryPercentageRow = mysqli_fetch_assoc($libraryPercentagesResult)) {
-                                $percentageId = $libraryPercentageRow['id'];
-                                $percentageName = $libraryPercentageRow['library_percentage'];
-                                $selected = $selectedLibraryPercentage === $percentageName ? 'selected' : '';
-
-                                echo "<option value=\"$percentageName\" $selected>$percentageName</option>";
-                            }
-                            ?>
-                        </select>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="input-group input-group-outline m-2">
-                       <select class="form-control" id="insertedBy" name="insertedBy">
-                          <option value="all" <?php echo $selectedInsertedBy === 'all' ? 'selected' : ''; ?>>-- جميع المستخدمين --</option>
+                      <select class="form-control" id="state" name="states">
+                          <option value="all" <?php echo $selectedStates === 'all' ? 'selected' : ''; ?>>-- جميع الولايات --</option>
+                          <!-- Fetch and display states dynamically from the database -->
                           <?php
-                          foreach ($usernames as $id => $username) {
-                              $selected = $selectedInsertedBy == $id ? 'selected' : '';
-                              echo "<option value=\"$id\" $selected>$username</option>";
+                          $statesQuery = "SELECT DISTINCT states FROM locations";
+                          $statesResult = mysqli_query($conn, $statesQuery);
+                          while ($statesRow = mysqli_fetch_assoc($statesResult)) {
+                              $isSelected = $selectedStates == $statesRow['states'] ? 'selected' : '';
+                              echo '<option value="' . $statesRow['states'] . '" ' . $isSelected . '>' . $statesRow['states'] . '</option>';
                           }
                           ?>
-                       </select>
-                </div>
-              </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-4">
-                  <div class="input-group input-group-outline m-2">
-                            <select class="form-control" id="state" name="states">
-                                <option value="all" <?php echo $selectedStates === 'all' ? 'selected' : ''; ?>>-- جميع الولايات --</option>
-                                <!-- Fetch and display states dynamically from the database -->
-                                <?php
-                                $statesQuery = "SELECT DISTINCT states FROM locations";
-                                $statesResult = mysqli_query($conn, $statesQuery);
-                                while ($statesRow = mysqli_fetch_assoc($statesResult)) {
-                                    $isSelected = $selectedStates == $statesRow['states'] ? 'selected' : '';
-                                    echo '<option value="' . $statesRow['states'] . '" ' . $isSelected . '>' . $statesRow['states'] . '</option>';
-                                }
-                                ?>
-                            </select>
+                      </select>
                   </div>
-                </div>
-               <div class="col-md-4">
+               </div>          
+                <div class="col-md-4">
                     <div class="input-group input-group-outline m-2">
                       <select class="form-control" name="province" id="province" <?php echo $selectedStates === 'all' ? 'disabled' : ''; ?>>
                           <option value="all">-- جميع الدوائر --</option>
                       </select>
                     </div>
-               </div>
-               <div class="col-md-4">
-                  <div class="input-group input-group-outline m-2">
-                      <select class="form-control" name="city" id="city" <?php echo ($selectedStates === 'all' || $selectedProvinces === 'all') ? 'disabled' : ''; ?>>
-                          <option value="all">-- جميع البلديات --</option>
-                      </select>
-                  </div>
-               </div>
-             </div>
-             <div class="row">
-               <div class="col-md-4">
-                  <div class="input-group input-group-outline m-2">
-                    <select class="form-control" id="hasNotes" name="hasNotes">
-                        <option value="all" <?php echo $selectedHasNotes === 'all' ? 'selected' : ''; ?>>-- فلترة الملاحظات --</option>
-                        <option value="yes" <?php echo $selectedHasNotes === 'yes' ? 'selected' : ''; ?>>يملك ملاحظات</option>
-                        <option value="no" <?php echo $selectedHasNotes === 'no' ? 'selected' : ''; ?>>لا يملك ملاحظات</option>
-                    </select>
-                  </div>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group input-group-outline m-2">
-                      <select class="form-control" id="socialMedia" name="socialMedia">
-                          <option value="all" <?php echo $selectedSocialMedia === 'all' ? 'selected' : ''; ?>>-- جميع وسائل التواصل --</option>
-                          <option value="fb" <?php echo $selectedSocialMedia === 'fb' ? 'selected' : ''; ?>>فيسبوك</option>
-                          <option value="insta" <?php echo $selectedSocialMedia === 'insta' ? 'selected' : ''; ?>>إنستغرام</option>
-                          <option value="website" <?php echo $selectedSocialMedia === 'website' ? 'selected' : ''; ?>>موقع</option>
-                          <option value="map" <?php echo $selectedSocialMedia === 'map' ? 'selected' : ''; ?>>خرائط قوقل</option>
+                        <select class="form-control" name="city" id="city" <?php echo ($selectedStates === 'all' || $selectedProvinces === 'all') ? 'disabled' : ''; ?>>
+                            <option value="all">-- جميع البلديات --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group input-group-outline m-2">
+                      <select class="form-control" id="hasNotes" name="hasNotes">
+                          <option value="all" <?php echo $selectedHasNotes === 'all' ? 'selected' : ''; ?>>-- فلترة الملاحظات --</option>
+                          <option value="yes" <?php echo $selectedHasNotes === 'yes' ? 'selected' : ''; ?>>يملك ملاحظات</option>
+                          <option value="no" <?php echo $selectedHasNotes === 'no' ? 'selected' : ''; ?>>لا يملك ملاحظات</option>
                       </select>
-                  </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group input-group-outline m-2">
+                        <select class="form-control" id="socialMedia" name="socialMedia">
+                            <option value="all" <?php echo $selectedSocialMedia === 'all' ? 'selected' : ''; ?>>-- جميع وسائل التواصل --</option>
+                            <option value="fb" <?php echo $selectedSocialMedia === 'fb' ? 'selected' : ''; ?>>فيسبوك</option>
+                            <option value="insta" <?php echo $selectedSocialMedia === 'insta' ? 'selected' : ''; ?>>إنستغرام</option>
+                            <option value="website" <?php echo $selectedSocialMedia === 'website' ? 'selected' : ''; ?>>موقع</option>
+                            <option value="map" <?php echo $selectedSocialMedia === 'map' ? 'selected' : ''; ?>>خرائط قوقل</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group input-group-outline m-2">
@@ -430,23 +353,23 @@ include('header.php');
                         </select>
                     </div>
                 </div>
-            </div>
-          <div class="row">
-              <div class="col-md-6">
-                  <div class="input-group input-group-outline my-3">
-                      <label for="startDate">تاريخ البداية: </label>
-                      <input type="date" class="form-control" id="startDate" name="startDate" value="<?php echo isset($startDate) ? $startDate : ''; ?>">
-                  </div>
-              </div>
-              <div class="col-md-6">
-                  <div class="input-group input-group-outline my-3">
-                      <label for="endDate">تاريخ النهاية: </label>
-                      <input type="date" class="form-control" id="endDate" name="endDate" value="<?php echo isset($endDate) ? $endDate : ''; ?>">
-                  </div>
-              </div>
-          </div>
+             </div>
+             <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline my-3">
+                        <label for="startDate">تاريخ البداية: </label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" value="<?php echo isset($startDate) ? $startDate : ''; ?>">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline my-3">
+                        <label for="endDate">تاريخ النهاية: </label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" value="<?php echo isset($endDate) ? $endDate : ''; ?>">
+                    </div>
+                </div>
+             </div>
 
-          <button type="submit"  class="btn bg-gradient-primary" >فلترة</button> 
+          <button type="submit"  class="btn bg-gradient-warning" >فلترة</button> 
           <button type="button" class="btn btn-secondary" id="clearFilter">مسح الفلتر</button>
 
         </form>
@@ -454,7 +377,7 @@ include('header.php');
         <div class="col-12">
           <div class="card my-4">
             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+              <div class="bg-gradient-warning shadow-warning border-radius-lg pt-4 pb-3">
                 <h6 class="text-white text-capitalize pe-3">جدول المكتبات</h6>
               </div>
             </div>
@@ -476,7 +399,6 @@ include('header.php');
                   </thead>
                   <tbody>
                   <?php
-
                 foreach ($items as $item) {    
                 ?>
                     <tr>
@@ -487,7 +409,6 @@ include('header.php');
                       </td>
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["library_type"]);?></h6>
-                        <p class="text-xs text-secondary text-bold mb-0"><?php echo htmlspecialchars($item["library_percentage"]);?></p>
                       </td>
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["phone"]);?></h6>
@@ -544,8 +465,7 @@ include('header.php');
 
                       </td>
                       <td class="align-middle text-sm">
-                      <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($usernames[$item["inserted_by"]]); ?></h6>
-                      <p class="text-xs text-secondary mb-0"><?php echo htmlspecialchars($item["created_at"]);?></p>
+                      <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["created_at"]); ?></h6>
                       </td>
                       <td class="align-middle text-sm">
                     <h6 class="mb-0 text-sm">
@@ -585,14 +505,14 @@ include('header.php');
                 </td>          
                       <td class="align-middle text-center">
                         <?php if (!empty($item["userfile"])): ?>
-                                    <a href="<?php echo htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
+                                    <a href="<?php echo '../'.htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
                                     <i class="fas fa-file-pdf align-middle" style="font-size: 18px;"></i></a>
                         <?php endif; 
-                        if ($userRole !== 'manager') { ?>
-                        <a href="update_library.php?id=<?php echo htmlspecialchars($item["id"]); ?>&states=<?php echo htmlspecialchars($item["states"]); ?>&province=<?php echo htmlspecialchars($item["provinces"]); ?>&city=<?php echo htmlspecialchars($item["cities"]); ?>" class="btn badge-sm bg-gradient-primary">
+                        if ($userRole === 'admin') { ?>
+                        <a href="update_lib_ext.php?id=<?php echo htmlspecialchars($item["id"]); ?>&states=<?php echo htmlspecialchars($item["states"]); ?>&province=<?php echo htmlspecialchars($item["provinces"]); ?>&city=<?php echo htmlspecialchars($item["cities"]); ?>" class="btn badge-sm bg-gradient-warning">
                         <i class="material-icons-round align-middle" style="font-size: 18px;">edit</i>
                         </a>
-                        <a href="delete_library.php?id=<?php echo htmlspecialchars($item["id"]);?>" class="btn badge-sm bg-gradient-danger"> <i class="material-icons-round align-middle" style="font-size: 18px;">delete</i></a>
+                        <a href="delete_lib_ext.php?id=<?php echo htmlspecialchars($item["id"]);?>" class="btn badge-sm bg-gradient-danger"> <i class="material-icons-round align-middle" style="font-size: 18px;">delete</i></a>
                         <?php } ?>
                       </td>
                     </tr>
@@ -612,14 +532,12 @@ include('header.php');
       <script>
 document.addEventListener("DOMContentLoaded", function() {
     const libraryTypeDropdown = document.getElementById("libraryType");
-    const libraryPercentageDropdown = document.getElementById("libraryPercentage");
     const stateDropdown = document.getElementById("state");
     const provinceDropdown = document.getElementById("province");
     const cityDropdown = document.getElementById("city");
     const notesDropdown = document.getElementById("hasNotes");
     const socialMediaDropdown = document.getElementById("socialMedia");
     const libraryDetailsDropdown = document.getElementById("libraryDetails");
-    const insertedByDropdown = document.getElementById("insertedBy");
     const startDateDropdown = document.getElementById("startDate");
     const endDateDropdown = document.getElementById("endDate");
 
@@ -670,14 +588,12 @@ document.addEventListener("DOMContentLoaded", function() {
     clearFilterButton.addEventListener("click", function() {
         // Clear selected values and disable dropdowns
         libraryTypeDropdown.value = "all";
-        libraryPercentageDropdown.value = "all";
         stateDropdown.value = "all";
         provinceDropdown.value = "all";
         cityDropdown.value = "all";
         notesDropdown.value = "all";
         socialMediaDropdown.value = "all";
         libraryDetailsDropdown.value = "all";
-        insertedByDropdown.value = "all";
         startDateDropdown.value = "all";
         endDateDropdown.value = "all";
         provinceDropdown.disabled = true;

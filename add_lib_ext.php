@@ -1,8 +1,8 @@
 <?php
 include('connect.php');
 // Initialize variables
-$library_name = $lib_owner_name = $library_last_name = $library_type_id = $address = $phone = $second_phone = $student_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
-$library_name_err = $lib_owner_name_err = $address_err = $phone_err = $second_phone_err = $student_phone_err = $email_err = $state_err = $province_err = $city_err = $file_err = $register_err = "";
+$library_name = $library_last_name = $library_type_id = $address = $phone = $second_phone = $student_phone = $email = $fbLink = $instaLink = $mapAddress = $websiteLink = $notes = $state = $province = $city = "";
+$library_name_err = $address_err = $phone_err = $second_phone_err = $student_phone_err = $email_err = $state_err = $province_err = $city_err = $file_err = $register_err = "";
 
 // Fetch states from the database
 $sql_fetch_states = "SELECT DISTINCT states FROM locations";
@@ -26,7 +26,6 @@ if (isset($_POST['selected_province'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Get the form data
   $library_name = trim($_POST["library_name"]);
-  $lib_owner_name = trim($_POST["lib_owner_name"]);
   $library_last_name = trim($_POST["library_last_name"]);
   $library_type_id = trim($_POST["library_type"]);
   $address = trim($_POST["address"]);
@@ -181,7 +180,7 @@ if (isset($_POST['fifthCheckbox'])) {
   }
 
   // If there are no errors, proceed with registration
-  if (empty($library_name_err) && empty($lib_owner_name_err) && empty($address_err) && empty($phone_err) && empty($second_phone_err) && empty($student_phone_err) && empty($email_err) && empty($state_err) && empty($province_err) && empty($city_err)  && empty($file_err)) {
+  if (empty($library_name_err) && empty($address_err) && empty($phone_err) && empty($second_phone_err) && empty($student_phone_err) && empty($email_err) && empty($state_err) && empty($province_err) && empty($city_err)  && empty($file_err)) {
     include('connect.php');
     session_start();
         // Get location_id based on state, province, and city
@@ -211,9 +210,9 @@ if (isset($_POST['fifthCheckbox'])) {
         // Insert the library data into the database
         mysqli_query($conn, "SET time_zone = '+01:00'");
 
-        $insert_query = "INSERT INTO ext_libraries (library_name, lib_owner_name, library_last_name, address, phone, second_phone, student_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, library_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO ext_libraries (library_name, library_last_name, address, phone, second_phone, student_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, library_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
-        mysqli_stmt_bind_param($stmt, "ssssssssssssssssssssii", $library_name, $lib_owner_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id);
+        mysqli_stmt_bind_param($stmt, "sssssssssssssssssssii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id);
         
         mysqli_stmt_execute($stmt);
 
@@ -364,7 +363,7 @@ $register_success_msg = isset($_SESSION['register_success_msg']) ? $_SESSION['re
             <div class="border rounded p-4 shadow">
                 <h6 class="border-bottom pb-2 mb-3">معلومات المكتبة</h6>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="input-group input-group-outline m-2">
                             <select class="form-control" id="library_type" name="library_type" required>
                                 <option value="" disabled selected>-- اختر نوع المكتبة * --</option>
@@ -377,17 +376,6 @@ $register_success_msg = isset($_SESSION['register_success_msg']) ? $_SESSION['re
                                 }
                                 ?>
                             </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="input-group input-group-outline m-2">
-                            <?php if (empty($lib_owner_name)): ?>
-                                <label for="lib_owner_name" class="form-label"> إسم صاحب المكتبة * </label>
-                            <?php endif; ?>
-                            <input type="text" class="form-control <?php echo (!empty($lib_owner_name_err)) ? 'is-invalid' : ''; ?>"
-                                id="lib_owner_name" name="lib_owner_name" value="<?php echo $lib_owner_name; ?>" required
-                                <?php if (!empty($lib_owner_name)) echo 'placeholder="اسم المكتبة"'; ?> />
-                            <span class="invalid-feedback"><?php echo $lib_owner_name_err; ?></span>
                         </div>
                     </div>
             </div>
