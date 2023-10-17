@@ -352,15 +352,14 @@ include('header.php');
               </div>
               <div class="col-md-4">
                 <div class="input-group input-group-outline m-2">
-                       <select class="form-control" id="insertedBy" name="insertedBy">
-                          <option value="all" <?php echo $selectedInsertedBy === 'all' ? 'selected' : ''; ?>>-- جميع المستخدمين --</option>
-                          <?php
-                          foreach ($usernames as $id => $username) {
-                              $selected = $selectedInsertedBy == $id ? 'selected' : '';
-                              echo "<option value=\"$id\" $selected>$username</option>";
-                          }
-                          ?>
-                       </select>
+                        <select class="form-control" id="libraryDetails" name="libraryDetails">
+                            <option value="all" <?php echo $selectedLibraryDetails === 'all' ? 'selected' : ''; ?>>-- جميع التفاصيل --</option>
+                            <option value="libraryPoster" <?php echo $selectedLibraryDetails === 'libraryPoster' ? 'selected' : ''; ?>>مكتبة ووراقة</option>
+                            <option value="printService" <?php echo $selectedLibraryDetails === 'printService' ? 'selected' : ''; ?>>خدمة الطباعة</option>
+                            <option value="online" <?php echo $selectedLibraryDetails === 'online' ? 'selected' : ''; ?>>يعمل أونلاين</option>
+                            <option value="publishingHouse" <?php echo $selectedLibraryDetails === 'publishingHouse' ? 'selected' : ''; ?>>دار نشر</option>
+                            <option value="infoMateriel" <?php echo $selectedLibraryDetails === 'infoMateriel' ? 'selected' : ''; ?>>يملك عتاد الإعلام آلي</option>
+                        </select>
                 </div>
               </div>
             </div>
@@ -418,18 +417,21 @@ include('header.php');
                       </select>
                   </div>
                 </div>
+                <?php if ($userRole === 'admin' || $userRole === 'manager') { ?>
                 <div class="col-md-4">
                     <div class="input-group input-group-outline m-2">
-                        <select class="form-control" id="libraryDetails" name="libraryDetails">
-                            <option value="all" <?php echo $selectedLibraryDetails === 'all' ? 'selected' : ''; ?>>-- جميع التفاصيل --</option>
-                            <option value="libraryPoster" <?php echo $selectedLibraryDetails === 'libraryPoster' ? 'selected' : ''; ?>>مكتبة ووراقة</option>
-                            <option value="printService" <?php echo $selectedLibraryDetails === 'printService' ? 'selected' : ''; ?>>خدمة الطباعة</option>
-                            <option value="online" <?php echo $selectedLibraryDetails === 'online' ? 'selected' : ''; ?>>يعمل أونلاين</option>
-                            <option value="publishingHouse" <?php echo $selectedLibraryDetails === 'publishingHouse' ? 'selected' : ''; ?>>دار نشر</option>
-                            <option value="infoMateriel" <?php echo $selectedLibraryDetails === 'infoMateriel' ? 'selected' : ''; ?>>يملك عتاد الإعلام آلي</option>
-                        </select>
+                        <select class="form-control" id="insertedBy" name="insertedBy">
+                                <option value="all" <?php echo $selectedInsertedBy === 'all' ? 'selected' : ''; ?>>-- جميع المستخدمين --</option>
+                                <?php
+                                foreach ($usernames as $id => $username) {
+                                    $selected = $selectedInsertedBy == $id ? 'selected' : '';
+                                    echo "<option value=\"$id\" $selected>$username</option>";
+                                }
+                                ?>
+                          </select>
                     </div>
                 </div>
+                <?php }?>
             </div>
           <div class="row">
               <div class="col-md-6">

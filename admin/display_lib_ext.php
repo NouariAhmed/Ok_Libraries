@@ -235,9 +235,70 @@ $result = mysqli_stmt_get_result($stmt);
 $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 include('header.php');
+
+if(isset($_POST['senddata'])){
+  $selected_id = $_POST['library_percentage'];
+  $selected_library_id = $_POST['ext_library_id'];
+  // Fetch the selected record
+  $query1 = "SELECT * FROM ext_libraries WHERE id = '$selected_library_id'";
+  $result1 = mysqli_query($conn, $query1);
+  if(mysqli_num_rows($result1) > 0) {
+  $row = mysqli_fetch_assoc($result1);
+      // Insert into libraries
+      $query2 = "INSERT INTO libraries (library_name, library_last_name, address, phone, second_phone, student_phone, email, fbLink, instaLink, mapAddress, websiteLink, created_at, notes,  userfile, filetype, firstCheckbox, secondCheckbox, thirdCheckbox, fourthCheckbox, fifthCheckbox, location_id, inserted_by, library_type_id, library_percentage_id) VALUES ('".$row['library_name']."',
+      '".$row['library_last_name']."',
+      '".$row['address']."',
+      '".$row['phone']."',
+      '".$row['second_phone']."',
+      '".$row['student_phone']."',
+      '".$row['email']."',
+      '".$row['fbLink']."',
+      '".$row['instaLink']."',
+      '".$row['mapAddress']."',
+      '".$row['websiteLink']."',
+      NOW(),
+      '".$row['notes']."',
+      '".$row['userfile']."',
+      '".$row['filetype']."',
+      '".$row['firstCheckbox']."',
+      '".$row['secondCheckbox']."',
+      '".$row['thirdCheckbox']."',
+      '".$row['fourthCheckbox']."',
+      '".$row['fifthCheckbox']."',
+      '".$row['location_id']."',
+      '$sessionUserId',
+      '".$row['library_type_id']."',
+      '$selected_id')";
+      if(mysqli_query($conn, $query2)) {
+          // Delete from ext_libraries
+          $query3 = "DELETE FROM ext_libraries WHERE id= '$selected_library_id'";
+
+          if(mysqli_query($conn, $query3)) {
+            $_SESSION['success_remove_message'] = "تم تغيير حالة المكتبة بنجاح.";
+            // Redirect (refresh) the page using JavaScript
+            echo '<script>window.location.href = "display_lib_ext.php";</script>';
+            exit;
+          
+        } else {
+              echo 'حدث خطأ في نقل المكتبة.';
+          }
+      } else {
+          echo 'Error inserting record.';
+      }
+    }
+}
+
 ?>
     <div class="container-fluid py-4">
       <?php
+   
+      if (isset($_SESSION['success_remove_message'])) {
+          echo '<div class="alert alert-success text-right text-white">' . $_SESSION['success_remove_message'] . '</div>';
+          // Clear the session variable to prevent the message from showing on subsequent page loads
+          unset($_SESSION['success_remove_message']);
+      }
+     
+      
     // Check if create_update_success session variable is set
         if (isset($_SESSION['create_update_success']) && $_SESSION['create_update_success'] === true) {
             echo '<div class="alert alert-success text-right text-white">تم إنشاء/تحديث العنصر بنجاح.</div>';
@@ -394,11 +455,13 @@ include('header.php');
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">تفاصيل</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">من طرف</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">ملاحظات</th>
+                      <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">نقل المكتبة</th>
                       <th class="text-center text-secondary text-lg font-weight-bolder opacity-7">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
                   <?php
+
                 foreach ($items as $item) {    
                 ?>
                     <tr>
@@ -502,10 +565,27 @@ include('header.php');
                             </div>
                         </div>
                     </div>
-                </td>          
+                </td> 
+                <td class="align-middle text-sm">
+                        <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>" onsubmit="return confirmSubmit();">
+                            <input type="hidden" name="ext_library_id" value="<?php echo $item["id"];?>">                            
+                            <select class="form-control border" id="library_percentage" name="library_percentage" required>
+                                <option value="" disabled selected> --- في الانتظار ---</option>
+                                <?php
+                                // Fetch library types from the database
+                                $sql_fetch_library_percentages = "SELECT * FROM library_percentages";
+                                $result_library_percentages = mysqli_query($conn, $sql_fetch_library_percentages);
+                                while ($row = mysqli_fetch_assoc($result_library_percentages)) {
+                                    echo '<option value="' . htmlspecialchars($row['id']) . '" data-library-name="' . htmlspecialchars($item['library_name']) . '">' . htmlspecialchars($row['library_percentage']) . '</option>';
+                                }
+                                ?>
+                            </select>
+                            <button class="btn btn-sm bg-info text-white mt-2" type="submit" name="senddata">تغيير الحالة</button> 
+                    </form>
+                    </td>         
                       <td class="align-middle text-center">
                         <?php if (!empty($item["userfile"])): ?>
-                                    <a href="<?php echo '../'.htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
+                                    <a href="<?php echo htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
                                     <i class="fas fa-file-pdf align-middle" style="font-size: 18px;"></i></a>
                         <?php endif; 
                         if ($userRole === 'admin') { ?>
@@ -600,7 +680,13 @@ document.addEventListener("DOMContentLoaded", function() {
         cityDropdown.disabled = true;
     });
 });
-
+// to display confirmation alert
+function confirmSubmit() {
+    var selectedOption = document.getElementById('library_percentage');
+    var selectedLibraryName = selectedOption.options[selectedOption.selectedIndex].getAttribute('data-library-name');
+    var confirmed = confirm("هل تريد بالفعل نقل مكتبة '" + selectedLibraryName + "' الى قائمة المكتبات الرئيسية");
+    return confirmed;
+}
 </script>
 <?php
  mysqli_close($conn);

@@ -253,16 +253,14 @@ $libraryTypes = mysqli_fetch_all($result_library_types, MYSQLI_ASSOC);
             mysqli_stmt_fetch($stmt_location);
             mysqli_stmt_close($stmt_location);
 
-            $uploadDirectory = "../sila_commercial_photos/";
+            $uploadDirectory = "sila_commercial_photos/";
 
-            $uploadedFile = $updateFileName =  $fileType = '';
+            $uploadedFile =  $fileType = '';
 
             if (!empty($_FILES['uploadedFile']['name'])) {
             // Generate a unique filename
             $uniqueFileName = uniqid() . "_" . basename($_FILES['uploadedFile']['name']);
             $uploadedFile = $uploadDirectory . $uniqueFileName;
-            // this is to make the new file to same path with files
-            $newUpdatedFileName = "sila_commercial_photos/" . $uniqueFileName;
             // Get the file type from the uploaded file
             $fileType = $_FILES['uploadedFile']['type'];
             // Move the uploaded file to the destination directory
@@ -275,7 +273,7 @@ $libraryTypes = mysqli_fetch_all($result_library_types, MYSQLI_ASSOC);
                 // If a new file is uploaded, update userfile and filetype
                 $sql_update_library = "UPDATE ext_libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, userfile = ?, filetype = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ? WHERE id = ?";
                 $stmt_update_library = mysqli_prepare($conn, $sql_update_library);
-                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssssiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $newUpdatedFileName, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $id);
+                mysqli_stmt_bind_param($stmt_update_library, "sssssssssssssssssssiii", $library_name, $library_last_name, $address, $phone, $second_phone, $student_phone, $email, $fbLink, $instaLink, $mapAddress, $websiteLink, $notes, $uploadedFile, $fileType, $firstCheckboxValue, $secondCheckboxValue, $thirdCheckboxValue, $fourthCheckboxValue, $fifthCheckboxValue, $location_id, $library_type_id, $id);
             } else {
                 // If no new file is uploaded, don't update userfile and filetype
                 $sql_update_library = "UPDATE ext_libraries SET library_name = ?, library_last_name = ?, address = ?, phone = ?, second_phone = ?, student_phone = ?, email = ?, fbLink = ?, instaLink = ?, mapAddress = ?, websiteLink = ?, notes = ?, firstCheckbox = ?, secondCheckbox = ?, thirdCheckbox = ?, fourthCheckbox = ?, fifthCheckbox = ?, location_id = ?, library_type_id = ? WHERE id = ?";
