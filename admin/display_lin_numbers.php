@@ -131,6 +131,7 @@ include('header.php');
        
         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
             <h5 class="mb-3">فلترة المكتبات</h5>
+
             <div class="row">
               <div class="col-md-4">
                   <div class="input-group input-group-outline m-2">
@@ -240,6 +241,7 @@ include('header.php');
             </div>
           <button type="submit"  class="btn bg-gradient-primary" >فلترة</button> 
           <button type="button" class="btn btn-secondary" id="clearFilter">مسح الفلتر</button>
+          <button id="copyButton" class="btn btn-warning">نسخ معلومات المكتبة</button>
 
         </form>
     <div class="row">
@@ -252,7 +254,7 @@ include('header.php');
             </div>
             <div class="card-body px-0 pb-2">
               <div class="table-responsive p-0">
-                <table class="table align-items-center mb-0 table-hover">
+                <table class="table align-items-center mb-0 table-hover" id="libraryTable">
                   <thead>
                     <tr>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 ">المكتبة</th>
@@ -263,7 +265,7 @@ include('header.php');
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">تفاصيل</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">من طرف</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">ملاحظات</th>
-                      <th class="text-center text-secondary text-lg font-weight-bolder opacity-7">الإجراءات</th>
+                     
                     </tr>
                   </thead>
                   <tbody>
@@ -284,13 +286,13 @@ include('header.php');
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["phone"]);?></h6>
                         <p class="text-xs text-secondary text-bold mb-0"><?php echo htmlspecialchars($item["second_phone"]);?></p>
-                        <p class="text-xs text-warning text-bold mb-0"><?php echo 'التلاميذ: '.htmlspecialchars($item["student_phone"]);?></p>
+                        <p class="text-xs text-warning text-bold mb-0" id="studentPhone"><?php echo htmlspecialchars($item["student_phone"]);?></p>
 
                       </td>
                       <td class="align-middle text-sm">
                         <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($item["states"]); ?></h6>
                         <p class="text-xs text-secondary mb-0"><?php echo htmlspecialchars($item["provinces"]); ?></p>
-                        <p class="text-xs text-warning mb-0 text-bold"><?php echo htmlspecialchars($item["cities"]); ?></p>
+                        <p class="text-xs text-warning mb-0 text-bold" id="cities"><?php echo htmlspecialchars($item["cities"]); ?></p>
                       </td>
                       <td class="align-middle text-sm">
                       <h6 class="mb-0 text-sm"><?php
@@ -375,18 +377,6 @@ include('header.php');
                         </div>
                     </div>
                 </td>          
-                      <td class="align-middle text-center">
-                        <?php if (!empty($item["userfile"])): ?>
-                                    <a href="<?php echo htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
-                                    <i class="fas fa-file-pdf align-middle" style="font-size: 18px;"></i></a>
-                        <?php endif; 
-                        if ($userRole !== 'manager') { ?>
-                        <a href="update_library.php?id=<?php echo htmlspecialchars($item["id"]); ?>&states=<?php echo htmlspecialchars($item["states"]); ?>&province=<?php echo htmlspecialchars($item["provinces"]); ?>&city=<?php echo htmlspecialchars($item["cities"]); ?>" class="btn badge-sm bg-gradient-primary">
-                        <i class="material-icons-round align-middle" style="font-size: 18px;">edit</i>
-                        </a>
-                        <a href="delete_library.php?id=<?php echo htmlspecialchars($item["id"]);?>" class="btn badge-sm bg-gradient-danger"> <i class="material-icons-round align-middle" style="font-size: 18px;">delete</i></a>
-                        <?php } ?>
-                      </td>
                     </tr>
                     <?php
                 }
@@ -399,6 +389,58 @@ include('header.php');
         </div>
       </div>
       <script>
+document.addEventListener("DOMContentLoaded", function() {
+  const copyButton = document.getElementById("copyButton");
+
+  copyButton.addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    let selectedState = document.getElementById("state").value;
+
+    let textToCopy = `قائمة مكتبات ولاية ${selectedState}\n`; // Add the header with the selected state
+
+    // Get all the table row elements from the body of the table
+    let rows = document.querySelectorAll("#libraryTable tbody tr");
+
+    // Loop over each table row
+    rows.forEach(function(row) {
+      // Get the library name and phone number from the relevant cells
+      // Assume they are always in the first and third cells of each row
+      let libraryName = row.cells[0].querySelector('h6').textContent.trim(); // Get only the library name, ignore last name and ID
+      let studentPhone = row.cells[2].querySelector('#studentPhone').textContent.trim(); // Get only student phones , ignore second and main phone
+      let cities = row.cells[3].querySelector('#cities').textContent.trim(); // 
+
+      // Append the information to the text to copy, format "Library Name - Phone Number - Student Phone"
+      textToCopy += `${libraryName} : ${studentPhone} - ${cities}\n`;
+    });
+
+    // Create a temporary textarea element to assist in copying the text
+    let textarea = document.createElement('textarea');
+    textarea.value = textToCopy;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    // Create a success message element
+    let successMessage = document.createElement('div');
+    successMessage.textContent = "تم نسخ المعلومات بنجاح!";
+    successMessage.style.color = "#4BB543";
+    successMessage.style.fontWeight = "bold";
+    successMessage.style.marginRight = "6px"; // Add right margin to separate from the copy button
+    successMessage.style.marginBottom = "10px"; // Add right margin to separate from the copy button
+
+    // Insert the success message next to the copy button
+    copyButton.insertAdjacentElement('afterend', successMessage);
+
+    // Remove the success message after a short delay (e.g., 2 seconds)
+    setTimeout(function() {
+      successMessage.remove();
+    }, 2000);
+  });
+});
+
+
 document.addEventListener("DOMContentLoaded", function() {
     const libraryTypeDropdown = document.getElementById("libraryType");
     const libraryPercentageDropdown = document.getElementById("libraryPercentage");
