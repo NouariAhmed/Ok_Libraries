@@ -4,6 +4,10 @@ include('secure.php');
 include('../connect.php');
 $table = "libraries";
 
+$itemsPerPage = 20; // Number of items per page
+
+$currentPage = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? intval($_GET['page']) : 1;
+// Get username           
 $usernames = [];
 $sql_users = "SELECT id, username FROM users";
 $result_users = mysqli_query($conn, $sql_users);
@@ -11,6 +15,22 @@ while ($user = mysqli_fetch_assoc($result_users)) {
     $usernames[$user['id']] = $user['username'];
 }
 
+// Get the total number of items in the database
+$sql = "SELECT COUNT(*) AS total_items FROM $table";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$totalItems = $row['total_items'];
+
+$totalPages = ceil($totalItems / $itemsPerPage);
+$currentPage = max(1, min($currentPage, $totalPages));
+
+$startIndex = ($currentPage - 1) * $itemsPerPage;
+
+// Retrieve items for the current page
+$result = mysqli_query($conn, "SELECT * FROM $table LIMIT $startIndex, $itemsPerPage");
+$items = mysqli_fetch_all($result, MYSQLI_ASSOC);
+ 
+// Get the selected library type, states, provinces, and cities from the query parameters
 $selectedLibraryType = isset($_GET['libraryType']) ? $_GET['libraryType'] : 'all';
 $selectedLibraryPercentage = isset($_GET['libraryPercentage']) ? $_GET['libraryPercentage'] : 'all'; 
 $selectedStates = isset($_GET['states']) ? $_GET['states'] : 'all';
@@ -19,62 +39,62 @@ $selectedCities = isset($_GET['city']) ? $_GET['city'] : 'all';
 $selectedHasNotes = isset($_GET['hasNotes']) ? $_GET['hasNotes'] : 'all';
 $selectedSocialMedia = isset($_GET['socialMedia']) ? $_GET['socialMedia'] : 'all';
 $selectedLibraryDetails = isset($_GET['libraryDetails']) ? $_GET['libraryDetails'] : 'all';
+$selectedInsertedBy = isset($_GET['insertedBy']) ? $_GET['insertedBy'] : 'all';
+$startDate = isset($_GET['startDate']) ? $_GET['startDate'] : null;
+$endDate = isset($_GET['endDate']) ? $_GET['endDate'] : null;
 
 $sessionUserId = $_SESSION['id']; 
 $userRole = $_SESSION['role']; 
 
-$sql = "";
 if ($userRole === 'admin' || $userRole === 'manager') {
   // For admin users, display all libraries
-  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
-          FROM $table AS l
+  $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
           INNER JOIN locations AS loc ON l.location_id = loc.location_id
           LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
           LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id WHERE 1 = 1";
 } elseif ($userRole === 'member') {
   // For member users, display only their own libraries
-  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
-          FROM $table AS l
+  $sql = "SELECT COUNT(*) AS total_filtered_items FROM $table AS l
           INNER JOIN locations AS loc ON l.location_id = loc.location_id
           LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
           LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
           WHERE l.inserted_by = $sessionUserId";
 }
 
-$bindTypes = '';
-$bindValues = [];
+$bindTypes = ''; // String to store parameter types
+$bindValues = []; // Array to store parameter values
 
 if ($selectedLibraryType !== 'all') {
-  $sql .= " AND lt.library_type = ?";
-  $bindTypes .= 's';
-  $bindValues[] = &$selectedLibraryType;
+    $sql .= " AND lt.library_type = ?";
+    $bindTypes .= 's'; // Assuming library_type is a string
+    $bindValues[] = &$selectedLibraryType;
 }
 
-if ($selectedLibraryPercentage !== 'all') {
-  $sql .= " AND lp.library_percentage = ?";
-  $bindTypes .= 's';
-  $bindValues[] = &$selectedLibraryPercentage;
+if ($selectedLibraryPercentage !== 'all') { // Add this condition
+    $sql .= " AND lp.library_percentage = ?";
+    $bindTypes .= 's'; // Assuming library_percentage is a string
+    $bindValues[] = &$selectedLibraryPercentage;
 }
 
 if ($selectedStates !== 'all') {
-  $sql .= " AND loc.states = ?";
-  $bindTypes .= 's';
-  $bindValues[] = &$selectedStates;
+    $sql .= " AND loc.states = ?";
+    $bindTypes .= 's'; // Assuming states is a string
+    $bindValues[] = &$selectedStates;
 }
 
 if ($selectedProvinces !== 'all') {
-  $sql .= " AND loc.provinces = ?";
-  $bindTypes .= 's';
-  $bindValues[] = &$selectedProvinces;
+    $sql .= " AND loc.provinces = ?";
+    $bindTypes .= 's'; // Assuming provinces is a string
+    $bindValues[] = &$selectedProvinces;
 }
 
 if ($selectedCities !== 'all') {
-  $sql .= " AND loc.cities = ?";
-  $bindTypes .= 's';
-  $bindValues[] = &$selectedCities;
+    $sql .= " AND loc.cities = ?";
+    $bindTypes .= 's'; // Assuming cities is a string
+    $bindValues[] = &$selectedCities;
 }
 
-// Notes filter
+// notes Filter
 if ($selectedHasNotes !== 'all') {
   if ($selectedHasNotes === 'yes') {
       $sql .= " AND l.notes IS NOT NULL AND l.notes <> ''";
@@ -83,7 +103,7 @@ if ($selectedHasNotes !== 'all') {
   }
 }
 
-// Social media filter
+// social media Filter
 if ($selectedSocialMedia !== 'all') {
   if ($selectedSocialMedia === 'fb') {
       $sql .= " AND l.fbLink IS NOT NULL AND l.fbLink <> ''";
@@ -96,7 +116,122 @@ if ($selectedSocialMedia !== 'all') {
   }
 }
 
-// Details filter
+// details Filter
+if ($selectedLibraryDetails !== 'all') {
+  if ($selectedLibraryDetails === 'libraryPoster') {
+      $sql .= " AND l.firstCheckbox = 'مكتبة ووراقة'";
+  } elseif ($selectedLibraryDetails === 'online') {
+    $sql .= " AND l.secondCheckbox = 'يعمل أونلاين'";
+  } elseif ($selectedLibraryDetails === 'publishingHouse') {
+    $sql .= " AND l.thirdCheckbox = 'دار نشر'";
+  } elseif ($selectedLibraryDetails === 'infoMateriel') {
+    $sql .= " AND l.fourthCheckbox = 'لديه عتاد اعلام آلي'";
+  } elseif ($selectedLibraryDetails === 'printService') {
+      $sql .= " AND l.fifthCheckbox = 'طباعة'";
+  }  
+}
+
+// users Filter
+if ($selectedInsertedBy !== 'all') {
+  $sql .= " AND l.inserted_by = ?";
+  $bindTypes .= 'i'; // Assuming inserted_by is an integer
+  $bindValues[] = &$selectedInsertedBy;
+}
+
+// start/end Date Filter
+if ($startDate && $endDate) {
+  $sql .= " AND l.created_at BETWEEN ? AND ?";
+  $bindTypes .= 'ss';
+  $bindValues[] = &$startDate;
+  $bindValues[] = &$endDate; 
+} elseif ($startDate) {
+  $sql .= " AND l.created_at >= ?";
+  $bindTypes .= 's';
+  $bindValues[] = &$startDate;
+} elseif ($endDate) {
+  $sql .= " AND l.created_at <= ?";
+  $bindTypes .= 's';
+  $bindValues[] = &$endDate;
+}
+
+$countStmt = mysqli_prepare($conn, $sql);
+
+// Bind parameters for the count query prepared statement
+if (!empty($bindValues)) {
+    $bindParams = array_merge([$bindTypes], $bindValues);
+    $countStmt->bind_param(...$bindParams);
+}
+
+// Execute the count query
+mysqli_stmt_execute($countStmt);
+
+$countResult = mysqli_stmt_get_result($countStmt);
+$countRow = mysqli_fetch_assoc($countResult);
+$totalFilteredItems = $countRow['total_filtered_items'];
+
+// Calculate Total Pages
+$totalPages = ceil($totalFilteredItems / $itemsPerPage);
+
+if ($userRole === 'admin' || $userRole === 'manager') {
+  // For admin users, display all libraries
+  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
+          FROM libraries AS l
+          INNER JOIN locations AS loc ON l.location_id = loc.location_id
+          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id WHERE 1 = 1";
+} elseif ($userRole === 'member') {
+  // For member users, display only their own libraries
+  $sql = "SELECT l.*, loc.states, loc.provinces, loc.cities, lt.library_type, lp.library_percentage
+          FROM libraries AS l
+          INNER JOIN locations AS loc ON l.location_id = loc.location_id
+          LEFT JOIN library_types AS lt ON l.library_type_id = lt.id
+          LEFT JOIN library_percentages AS lp ON l.library_percentage_id = lp.id
+          WHERE l.inserted_by = $sessionUserId";
+}
+        
+if ($selectedLibraryType !== 'all') {
+    $sql .= " AND lt.library_type = ?";
+}
+
+if ($selectedLibraryPercentage !== 'all') {
+    $sql .= " AND lp.library_percentage = ?";
+}
+
+if ($selectedStates !== 'all') {
+    $sql .= " AND loc.states = ?";
+}
+
+if ($selectedProvinces !== 'all') {
+    $sql .= " AND loc.provinces = ?";
+}
+
+if ($selectedCities !== 'all') {
+    $sql .= " AND loc.cities = ?";
+}
+
+// notes Filter
+if ($selectedHasNotes !== 'all') {
+  if ($selectedHasNotes === 'yes') {
+      $sql .= " AND l.notes IS NOT NULL AND l.notes <> ''";
+  } else {
+      $sql .= " AND (l.notes IS NULL OR l.notes = '')";
+  }
+}
+
+// social media Filter
+if ($selectedSocialMedia !== 'all') {
+  if ($selectedSocialMedia === 'fb') {
+      $sql .= " AND l.fbLink IS NOT NULL AND l.fbLink <> ''";
+  } elseif ($selectedSocialMedia === 'insta') {
+      $sql .= " AND l.instaLink IS NOT NULL AND l.instaLink <> ''";
+  } elseif ($selectedSocialMedia === 'map') {
+      $sql .= " AND l.mapAddress IS NOT NULL AND l.mapAddress <> ''";
+  } elseif ($selectedSocialMedia === 'website') {
+      $sql .= " AND l.websiteLink IS NOT NULL AND l.websiteLink <> ''";
+  }
+}
+
+// details Filter
 if ($selectedLibraryDetails !== 'all') {
   if ($selectedLibraryDetails === 'libraryPoster') {
       $sql .= " AND l.firstCheckbox = 'مكتبة ووراقة'";
@@ -111,27 +246,71 @@ if ($selectedLibraryDetails !== 'all') {
   }  
 }
 
+// users Filter
+if ($selectedInsertedBy !== 'all') {
+    $sql .= " AND l.inserted_by = ?";
+}
+
+// start/end Date Filter
+if ($startDate && $endDate) {
+    $sql .= " AND l.created_at BETWEEN ? AND ?";
+} elseif ($startDate) {
+    $sql .= " AND l.created_at >= ?";
+} elseif ($endDate) {
+    $sql .= " AND l.created_at <= ?";
+}
+
 $sql .= " ORDER BY l.id DESC";
+$sql .= " LIMIT $startIndex, $itemsPerPage";
 
 $stmt = mysqli_prepare($conn, $sql);
 
+// Bind parameters for the query prepared statement
 if (!empty($bindValues)) {
-  $bindParams = array_merge([$bindTypes], $bindValues);
-  $stmt->bind_param(...$bindParams);
+    $bindParams = array_merge([$bindTypes], $bindValues);
+    $stmt->bind_param(...$bindParams);
 }
 
+// Execute the query
 mysqli_stmt_execute($stmt);
+
+// Get the result set
 $result = mysqli_stmt_get_result($stmt);
+
+// Fetch the items for the current page
 $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 include('header.php');
 ?>
-
     <div class="container-fluid py-4">
+      <?php
+    // Check if create_update_success session variable is set
+        if (isset($_SESSION['create_update_success']) && $_SESSION['create_update_success'] === true) {
+            echo '<div class="alert alert-success text-right text-white">تم إنشاء/تحديث العنصر بنجاح.</div>';
+            // Unset the session variable to avoid displaying the message on page refresh
+            unset($_SESSION['create_update_success']);
+        }
+        // Check if delete_success session variable is set
+        if (isset($_SESSION['delete_success']) && $_SESSION['delete_success'] === true) {
+            echo '<div class="alert alert-success text-right text-white">تم حذف العنصر بنجاح.</div>';
+            // Unset the session variable to avoid displaying the message on page refresh
+            unset($_SESSION['delete_success']);
+        }
+        // Check if item_not_found session variable is set
+        if (isset($_SESSION['item_not_found']) && $_SESSION['item_not_found'] === true) {
+            echo '<div class="alert alert-danger text-right text-white">العنصر غير موجود.</div>';
+            // Unset the session variable to avoid displaying the message on page refresh
+            unset($_SESSION['item_not_found']);
+        }
+        if ($userRole !== 'manager') { ?>
+          <h4 class="mb-3">إضافة مكتبة</h4>
+          <div class="input-group input-group-outline my-3">
+              <a href="add_library.php" class="btn btn-secondary">إضـافة</a>
+          </div>
+        <?php } ?>
        
         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
             <h5 class="mb-3">فلترة المكتبات</h5>
-
             <div class="row">
               <div class="col-md-4">
                   <div class="input-group input-group-outline m-2">
@@ -238,10 +417,41 @@ include('header.php');
                       </select>
                   </div>
                 </div>
+                <?php if ($userRole === 'admin' || $userRole === 'manager') { ?>
+                <div class="col-md-4">
+                    <div class="input-group input-group-outline m-2">
+                        <select class="form-control" id="insertedBy" name="insertedBy">
+                                <option value="all" <?php echo $selectedInsertedBy === 'all' ? 'selected' : ''; ?>>-- جميع المستخدمين --</option>
+                                <?php
+                                foreach ($usernames as $id => $username) {
+                                    $selected = $selectedInsertedBy == $id ? 'selected' : '';
+                                    echo "<option value=\"$id\" $selected>$username</option>";
+                                }
+                                ?>
+                          </select>
+                    </div>
+                </div>
+                <?php }?>
             </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <div class="input-group input-group-outline my-3">
+                      <label for="startDate">تاريخ البداية: </label>
+                      <input type="date" class="form-control" id="startDate" name="startDate" value="<?php echo isset($startDate) ? $startDate : ''; ?>">
+                  </div>
+              </div>
+              <div class="col-md-6">
+                  <div class="input-group input-group-outline my-3">
+                      <label for="endDate">تاريخ النهاية: </label>
+                      <input type="date" class="form-control" id="endDate" name="endDate" value="<?php echo isset($endDate) ? $endDate : ''; ?>">
+                  </div>
+              </div>
+          </div>
+
           <button type="submit"  class="btn bg-gradient-primary" >فلترة</button> 
           <button type="button" class="btn btn-secondary" id="clearFilter">مسح الفلتر</button>
           <button id="copyButton" class="btn btn-warning">نسخ معلومات المكتبة</button>
+
 
         </form>
     <div class="row">
@@ -265,7 +475,7 @@ include('header.php');
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">تفاصيل</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">من طرف</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">ملاحظات</th>
-                     
+                      <th class="text-center text-secondary text-lg font-weight-bolder opacity-7">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -377,19 +587,34 @@ include('header.php');
                         </div>
                     </div>
                 </td>          
+                      <td class="align-middle text-center">
+                        <?php if (!empty($item["userfile"])): ?>
+                                    <a href="<?php echo htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
+                                    <i class="fas fa-file-pdf align-middle" style="font-size: 18px;"></i></a>
+                        <?php endif; 
+                        if ($userRole !== 'manager') { ?>
+                        <a href="update_library.php?id=<?php echo htmlspecialchars($item["id"]); ?>&states=<?php echo htmlspecialchars($item["states"]); ?>&province=<?php echo htmlspecialchars($item["provinces"]); ?>&city=<?php echo htmlspecialchars($item["cities"]); ?>" class="btn badge-sm bg-gradient-primary">
+                        <i class="material-icons-round align-middle" style="font-size: 18px;">edit</i>
+                        </a>
+                        <a href="delete_library.php?id=<?php echo htmlspecialchars($item["id"]);?>" class="btn badge-sm bg-gradient-danger"> <i class="material-icons-round align-middle" style="font-size: 18px;">delete</i></a>
+                        <?php } ?>
+                      </td>
                     </tr>
                     <?php
                 }
                 ?>
                   </tbody>
                 </table>
+                <?php
+                include('../pagination.php');
+                  ?>
               </div>
             </div>
           </div>
         </div>
       </div>
       <script>
-document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
   const copyButton = document.getElementById("copyButton");
 
   copyButton.addEventListener("click", function(event) {
@@ -440,7 +665,6 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 
-
 document.addEventListener("DOMContentLoaded", function() {
     const libraryTypeDropdown = document.getElementById("libraryType");
     const libraryPercentageDropdown = document.getElementById("libraryPercentage");
@@ -450,6 +674,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const notesDropdown = document.getElementById("hasNotes");
     const socialMediaDropdown = document.getElementById("socialMedia");
     const libraryDetailsDropdown = document.getElementById("libraryDetails");
+    const insertedByDropdown = document.getElementById("insertedBy");
+    const startDateDropdown = document.getElementById("startDate");
+    const endDateDropdown = document.getElementById("endDate");
 
     stateDropdown.addEventListener("change", function() {
         const selectedState = stateDropdown.value;
@@ -505,6 +732,9 @@ document.addEventListener("DOMContentLoaded", function() {
         notesDropdown.value = "all";
         socialMediaDropdown.value = "all";
         libraryDetailsDropdown.value = "all";
+        insertedByDropdown.value = "all";
+        startDateDropdown.value = "all";
+        endDateDropdown.value = "all";
         provinceDropdown.disabled = true;
         cityDropdown.disabled = true;
     });
@@ -514,4 +744,4 @@ document.addEventListener("DOMContentLoaded", function() {
 <?php
  mysqli_close($conn);
 include('footer.php');
-?>         
+?> 
