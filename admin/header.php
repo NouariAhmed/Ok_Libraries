@@ -59,6 +59,14 @@
             <span class="nav-link-text me-1">إضافة مكتبة</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="display_lin_numbers.php">
+            <div class="text-white text-center ms-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons-round opacity-10">local_phone</i>
+            </div>
+            <span class="nav-link-text me-1">خدمة الزبائن</span>
+          </a>
+        </li>
         <?php
         $currentDate = date("Y-m-d");
 

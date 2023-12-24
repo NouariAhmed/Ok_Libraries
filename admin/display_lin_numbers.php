@@ -634,9 +634,11 @@ include('header.php');
       let libraryName = row.cells[0].querySelector('h6').textContent.trim(); // Get only the library name, ignore last name and ID
       let studentPhone = row.cells[2].querySelector('#studentPhone').textContent.trim(); // Get only student phones , ignore second and main phone
       let cities = row.cells[3].querySelector('#cities').textContent.trim(); // 
+      var phoneEmoji = String.fromCodePoint(0x260E); 
 
       // Append the information to the text to copy, format "Library Name - Phone Number - Student Phone"
-      textToCopy += `${libraryName} : ${studentPhone} - ${cities}\n`;
+      textToCopy += `${libraryName} - ${phoneEmoji} ${studentPhone} - بلدية ${cities}\n`;
+
     });
 
     // Create a temporary textarea element to assist in copying the text
