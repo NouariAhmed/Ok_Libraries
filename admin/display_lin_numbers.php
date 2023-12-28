@@ -283,31 +283,6 @@ $items = mysqli_fetch_all($result, MYSQLI_ASSOC);
 include('header.php');
 ?>
     <div class="container-fluid py-4">
-      <?php
-    // Check if create_update_success session variable is set
-        if (isset($_SESSION['create_update_success']) && $_SESSION['create_update_success'] === true) {
-            echo '<div class="alert alert-success text-right text-white">تم إنشاء/تحديث العنصر بنجاح.</div>';
-            // Unset the session variable to avoid displaying the message on page refresh
-            unset($_SESSION['create_update_success']);
-        }
-        // Check if delete_success session variable is set
-        if (isset($_SESSION['delete_success']) && $_SESSION['delete_success'] === true) {
-            echo '<div class="alert alert-success text-right text-white">تم حذف العنصر بنجاح.</div>';
-            // Unset the session variable to avoid displaying the message on page refresh
-            unset($_SESSION['delete_success']);
-        }
-        // Check if item_not_found session variable is set
-        if (isset($_SESSION['item_not_found']) && $_SESSION['item_not_found'] === true) {
-            echo '<div class="alert alert-danger text-right text-white">العنصر غير موجود.</div>';
-            // Unset the session variable to avoid displaying the message on page refresh
-            unset($_SESSION['item_not_found']);
-        }
-        if ($userRole !== 'manager') { ?>
-          <h4 class="mb-3">إضافة مكتبة</h4>
-          <div class="input-group input-group-outline my-3">
-              <a href="add_library.php" class="btn btn-secondary">إضـافة</a>
-          </div>
-        <?php } ?>
        
         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
             <h5 class="mb-3">فلترة المكتبات</h5>
@@ -475,7 +450,6 @@ include('header.php');
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">تفاصيل</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">من طرف</th>
                       <th class="text-secondary text-lg font-weight-bolder opacity-7 pe-2">ملاحظات</th>
-                      <th class="text-center text-secondary text-lg font-weight-bolder opacity-7">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -587,18 +561,7 @@ include('header.php');
                         </div>
                     </div>
                 </td>          
-                      <td class="align-middle text-center">
-                        <?php if (!empty($item["userfile"])): ?>
-                                    <a href="<?php echo htmlspecialchars($item["userfile"]); ?>" class="btn badge-sm bg-gradient-secondary" target="_blank">
-                                    <i class="fas fa-file-pdf align-middle" style="font-size: 18px;"></i></a>
-                        <?php endif; 
-                        if ($userRole !== 'manager') { ?>
-                        <a href="update_library.php?id=<?php echo htmlspecialchars($item["id"]); ?>&states=<?php echo htmlspecialchars($item["states"]); ?>&province=<?php echo htmlspecialchars($item["provinces"]); ?>&city=<?php echo htmlspecialchars($item["cities"]); ?>" class="btn badge-sm bg-gradient-primary">
-                        <i class="material-icons-round align-middle" style="font-size: 18px;">edit</i>
-                        </a>
-                        <a href="delete_library.php?id=<?php echo htmlspecialchars($item["id"]);?>" class="btn badge-sm bg-gradient-danger"> <i class="material-icons-round align-middle" style="font-size: 18px;">delete</i></a>
-                        <?php } ?>
-                      </td>
+
                     </tr>
                     <?php
                 }

@@ -64,11 +64,11 @@ if (empty($uname_err) && empty($pwd_err)) {
                             // Check if "Remember Me" is checked
                 if (isset($_POST['rememberMe'])) {
                     // Set cookies for username and password
-                    setcookie('remember_username', $uname, time() + (10 * 365 * 24 * 60 * 60), '/');
-                    setcookie('remember_password', $pwd, time() + (10 * 365 * 24 * 60 * 60), '/');
+                    setcookie('remember_username', $uname, time() + (30 * 24 * 60 * 60), '/', null, true, true);
+                    setcookie('remember_password', $pwd, time() + (30 * 24 * 60 * 60), '/', null, true, true);
                 }else {
-                    setcookie('remember_username', '', time() - (10 * 365 * 24 * 60 * 60), '/');
-                    setcookie('remember_password', '', time() - (10 * 365 * 24 * 60 * 60), '/');
+                  setcookie('remember_username', $uname, 0, '/', null, true, true);
+                  setcookie('remember_password', $pwd, 0, '/', null, true, true);
                 }  
                 // Admin user, redirect to dashboard
                 header("Location: admin/index.php");
@@ -135,7 +135,7 @@ if (empty($uname_err) && empty($pwd_err)) {
                 <form role="form" method="post" action="">
                   <div class="input-group input-group-outline my-3" dir="rtl">
                     <label class="form-label">إسم المستخدم/الإيميل</label>
-                    <input type="text" class="form-control <?php echo (!empty($uname_err)) ? 'is-invalid' : ''; ?>" id="username" name="txt_uname" value="<?php echo $cookUname; ?>" />
+                    <input type="text" class="form-control <?php echo (!empty($uname_err)) ? 'is-invalid' : ''; ?>" id="username" name="txt_uname" value="<?php echo empty($cookUname) ? $uname : $cookUname; ?>" />
                     <span class="invalid-feedback"><?php echo $uname_err; ?></span>
                   </div>
                   <div class="input-group input-group-outline mb-3" dir="rtl">
