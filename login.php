@@ -1,7 +1,13 @@
-
 <?php
 session_start(); 
-
+if (isset($_COOKIE['remember_username']) && $_COOKIE['remember_password']) {
+  // Use the values from cookies to pre-fill the form fields
+  $cookUname = $_COOKIE['remember_username'];
+  $cookPwd = $_COOKIE['remember_password'];
+}else {
+  $cookUname="";
+  $cookPwd="";
+}
 // Check if the registration success message exists in the session
 if (isset($_SESSION['register_success_msg'])) {
     $register_success_msg = $_SESSION['register_success_msg'];
@@ -35,7 +41,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 if (empty($uname_err) && empty($pwd_err)) {
     // Create a database connection
     include('connect.php');
-
     // Check if the input matches either the email or username in the database
     $sql_check_user = "SELECT id, username, email, pass, role FROM users WHERE email = ? OR username = ?";
     $stmt_check_user = mysqli_prepare($conn, $sql_check_user);
@@ -55,7 +60,16 @@ if (empty($uname_err) && empty($pwd_err)) {
             $_SESSION["id"] = $id;
             $_SESSION['role'] = $role;
             $_SESSION['username'] = $username;
-            $_SESSION['showWelcomeMessage'] = true;      
+            $_SESSION['showWelcomeMessage'] = true;    
+                            // Check if "Remember Me" is checked
+                if (isset($_POST['rememberMe'])) {
+                    // Set cookies for username and password
+                    setcookie('remember_username', $uname, time() + (10 * 365 * 24 * 60 * 60), '/');
+                    setcookie('remember_password', $pwd, time() + (10 * 365 * 24 * 60 * 60), '/');
+                }else {
+                    setcookie('remember_username', '', time() - (10 * 365 * 24 * 60 * 60), '/');
+                    setcookie('remember_password', '', time() - (10 * 365 * 24 * 60 * 60), '/');
+                }  
                 // Admin user, redirect to dashboard
                 header("Location: admin/index.php");
 
@@ -121,17 +135,17 @@ if (empty($uname_err) && empty($pwd_err)) {
                 <form role="form" method="post" action="">
                   <div class="input-group input-group-outline my-3" dir="rtl">
                     <label class="form-label">إسم المستخدم/الإيميل</label>
-                    <input type="text" class="form-control <?php echo (!empty($uname_err)) ? 'is-invalid' : ''; ?>" id="username" name="txt_uname" value="<?php echo $uname; ?>" />
+                    <input type="text" class="form-control <?php echo (!empty($uname_err)) ? 'is-invalid' : ''; ?>" id="username" name="txt_uname" value="<?php echo $cookUname; ?>" />
                     <span class="invalid-feedback"><?php echo $uname_err; ?></span>
                   </div>
                   <div class="input-group input-group-outline mb-3" dir="rtl">
                     <label class="form-label">كلمة المرور</label>
-                    <input type="password" class="form-control <?php echo (!empty($pwd_err)) ? 'is-invalid' : ''; ?>" id="password" name="txt_pwd" />
+                    <input type="password" class="form-control <?php echo (!empty($pwd_err)) ? 'is-invalid' : ''; ?>" id="password" name="txt_pwd" value="<?php echo $cookPwd; ?>"/>
                     <span class="invalid-feedback"><?php echo $pwd_err; ?></span>
                   </div>
                   <div class="form-check form-switch d-flex align-items-center mb-3" dir="rtl">
                   <label class="form-check-label mb-0 ms-2" for="rememberMe">تذكرني</label>
-                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
                   </div>
                   <div class="text-center">
                     <button type="submit" class="btn bg-gradient-info w-100 my-4 mb-2" name="but_submit">تسجيل الدخول</button>
